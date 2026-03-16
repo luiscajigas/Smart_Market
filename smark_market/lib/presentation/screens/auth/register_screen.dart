@@ -5,7 +5,7 @@ import '../../widgets/sm_button.dart';
 import '../../widgets/sm_text_field.dart';
 import '../../widgets/logo_widget.dart';
 import 'login_screen.dart';
-import '../home/home_screen.dart';
+import '../home/main_shell.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -50,7 +50,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(
-            builder: (_) => HomeScreen(userData: result.data?['user'])),
+            builder: (_) => MainShell(userData: result.data?['user'])),
         (_) => false,
       );
     } else {

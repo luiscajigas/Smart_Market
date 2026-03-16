@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'core/theme/app_theme.dart';
 import 'data/repositories/auth_repository.dart';
 import 'presentation/screens/welcome/welcome_screen.dart';
-import 'presentation/screens/home/home_screen.dart';
+import 'presentation/screens/home/main_shell.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,7 +29,7 @@ class SmartMarketApp extends StatelessWidget {
       title: 'Smart Market',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.darkTheme,
-      home: isLoggedIn ? const HomeScreen() : const WelcomeScreen(),
+      home: isLoggedIn ? const MainShell() : const WelcomeScreen(),
     );
   }
 }
