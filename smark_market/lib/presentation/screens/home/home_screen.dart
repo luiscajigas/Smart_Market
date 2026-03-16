@@ -96,7 +96,7 @@ class HomeScreen extends StatelessWidget {
                       color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w700)),
                   const SizedBox(height: 12),
                   SizedBox(
-                    height: 80,
+                    height: 100,
                     child: ListView.builder(
                       scrollDirection: Axis.horizontal,
                       itemCount: MockData.supermarkets.length,
@@ -104,19 +104,21 @@ class HomeScreen extends StatelessWidget {
                         final s = MockData.supermarkets[i];
                         return Container(
                           margin: const EdgeInsets.only(right: 12),
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                           decoration: BoxDecoration(
                             color: AppColors.cardBackground,
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(color: AppColors.border),
                           ),
                           child: Column(
+                            mainAxisSize: MainAxisSize.min,
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Text(s.logo, style: const TextStyle(fontSize: 24)),
-                              const SizedBox(height: 4),
+                              Text(s.logo, style: const TextStyle(fontSize: 26)),
+                              const SizedBox(height: 6),
                               Text(s.name, style: const TextStyle(
                                 color: AppColors.textPrimary, fontSize: 11, fontWeight: FontWeight.w600)),
+                              const SizedBox(height: 2),
                               Text('${s.distance}km',
                                 style: const TextStyle(color: AppColors.textHint, fontSize: 10)),
                             ],
