@@ -1,5 +1,4 @@
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import '../datasources/api_service.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/constants/app_constants.dart';
 
 class AuthResult {
@@ -11,95 +10,136 @@ class AuthResult {
 }
 
 class AuthRepository {
-  static const _storage = FlutterSecureStorage();
+  static final SupabaseClient _client = Supabase.instance.client;
 
   static Future<AuthResult> register({
     required String nombre,
     required String email,
     required String contrasena,
   }) async {
-    final response = await ApiService.post(
-      endpoint: AppConstants.registerEndpoint,
-      body: {'nombre': nombre, 'email': email, 'contrasena': contrasena},
-    );
-    if (response.success && response.data != null) {
-      final token = response.data!['token'] as String?;
-      if (token != null) {
-        await _storage.write(key: AppConstants.tokenKey, value: token);
+    try {
+      final AuthResponse response = await _client.auth.signUp(
+        email: email,
+        password: contrasena,
+        data: {'full_name': nombre},
+      );
+
+      if (response.user != null) {
+        // Opcionalmente, insertar en una tabla de perfiles pública
+        try {
+          await _client.from('profiles').upsert({
+            'id': response.user!.id,
+            'full_name': nombre,
+            'email': email,
+            'updated_at': DateTime.now().toIso8601String(),
+          });
+        } catch (e) {
+          // Si falla el perfil, igual el usuario se creó en Auth
+          print('Error al crear perfil: $e');
+        }
+
+        return AuthResult(
+          success: true,
+          message: 'Registro exitoso. Revisa tu correo.',
+          data: {'user': response.user?.toJson()},
+        );
       }
+      return AuthResult(success: false, message: 'Error en el registro');
+    } on AuthException catch (e) {
+      return AuthResult(success: false, message: e.message);
+    } catch (e) {
+      return AuthResult(success: false, message: 'Ocurrió un error inesperado');
     }
-    return AuthResult(
-      success: response.success,
-      message: response.message,
-      data: response.data,
-    );
   }
 
   static Future<AuthResult> login({
     required String email,
     required String contrasena,
   }) async {
-    final response = await ApiService.post(
-      endpoint: AppConstants.loginEndpoint,
-      body: {'email': email, 'contrasena': contrasena},
-    );
-    if (response.success && response.data != null) {
-      final token = response.data!['token'] as String?;
-      if (token != null) {
-        await _storage.write(key: AppConstants.tokenKey, value: token);
+    try {
+      final AuthResponse response = await _client.auth.signInWithPassword(
+        email: email,
+        password: contrasena,
+      );
+
+      if (response.user != null) {
+        return AuthResult(
+          success: true,
+          message: 'Inicio de sesión exitoso',
+          data: {'user': response.user?.toJson()},
+        );
       }
+      return AuthResult(success: false, message: 'Error al iniciar sesión');
+    } on AuthException catch (e) {
+      return AuthResult(success: false, message: e.message);
+    } catch (e) {
+      return AuthResult(success: false, message: 'Ocurrió un error inesperado');
     }
-    return AuthResult(
-      success: response.success,
-      message: response.message,
-      data: response.data,
-    );
   }
 
-  static Future<AuthResult> requestPasswordReset({required String email}) async {
-    final response = await ApiService.post(
-      endpoint: AppConstants.passwordResetRequestEndpoint,
-      body: {'email': email},
-    );
-    return AuthResult(success: response.success, message: response.message);
+  static Future<AuthResult> requestPasswordReset(
+      {required String email}) async {
+    try {
+      await _client.auth.resetPasswordForEmail(email);
+      return AuthResult(
+          success: true, message: 'Se envió un correo de recuperación');
+    } on AuthException catch (e) {
+      return AuthResult(success: false, message: e.message);
+    } catch (e) {
+      return AuthResult(success: false, message: 'Ocurrió un error inesperado');
+    }
   }
 
   static Future<AuthResult> verifyResetCode({
     required String email,
     required String codigo,
   }) async {
-    final response = await ApiService.post(
-      endpoint: AppConstants.passwordResetVerifyEndpoint,
-      body: {'email': email, 'codigo': codigo},
-    );
-    return AuthResult(
-      success: response.success,
-      message: response.message,
-      data: response.data,
-    );
+    try {
+      final response = await _client.auth.verifyOTP(
+        email: email,
+        token: codigo,
+        type: OtpType.recovery,
+      );
+
+      if (response.session != null) {
+        return AuthResult(
+          success: true,
+          message: 'Código verificado correctamente',
+          data: {'session': response.session},
+        );
+      }
+      return AuthResult(success: false, message: 'Código inválido o expirado');
+    } on AuthException catch (e) {
+      return AuthResult(success: false, message: e.message);
+    } catch (e) {
+      return AuthResult(success: false, message: 'Ocurrió un error inesperado');
+    }
   }
 
-  static Future<AuthResult> changePassword({
+  static Future<AuthResult> updatePassword({
     required String nuevaContrasena,
-    required String resetToken,
   }) async {
-    final response = await ApiService.post(
-      endpoint: AppConstants.passwordResetChangeEndpoint,
-      body: {'nuevaContrasena': nuevaContrasena, 'resetToken': resetToken},
-    );
-    return AuthResult(success: response.success, message: response.message);
-  }
-
-  static Future<String?> getToken() async {
-    return await _storage.read(key: AppConstants.tokenKey);
-  }
-
-  static Future<void> logout() async {
-    await _storage.delete(key: AppConstants.tokenKey);
+    try {
+      await _client.auth.updateUser(
+        UserAttributes(password: nuevaContrasena),
+      );
+      return AuthResult(success: true, message: 'Contraseña actualizada');
+    } on AuthException catch (e) {
+      return AuthResult(success: false, message: e.message);
+    } catch (e) {
+      return AuthResult(success: false, message: 'Ocurrió un error inesperado');
+    }
   }
 
   static Future<bool> isLoggedIn() async {
-    final token = await _storage.read(key: AppConstants.tokenKey);
-    return token != null && token.isNotEmpty;
+    return _client.auth.currentSession != null;
+  }
+
+  static Future<void> logout() async {
+    await _client.auth.signOut();
+  }
+
+  static Future<String?> getToken() async {
+    return _client.auth.currentSession?.accessToken;
   }
 }

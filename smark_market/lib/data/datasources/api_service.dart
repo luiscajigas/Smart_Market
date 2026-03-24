@@ -51,30 +51,23 @@ class ApiService {
     }
   }
 
-  static Future<ApiResponse<Map<String, dynamic>>> get({
-    required String endpoint,
-    String? token,
-  }) async {
+  static Future<ApiResponse<Map<String, dynamic>>> searchProducts(String query) async {
     try {
-      final headers = {
-        'Content-Type': 'application/json',
-        if (token != null) 'Authorization': 'Bearer $token',
-      };
-      final response = await http
-          .get(
-            Uri.parse('${AppConstants.baseUrl}$endpoint'),
-            headers: headers,
-          )
-          .timeout(const Duration(seconds: 15));
+      final response = await http.get(
+        Uri.parse('${AppConstants.baseUrl}${AppConstants.searchEndpoint}?query=$query'),
+      ).timeout(const Duration(seconds: 30));
 
       final data = jsonDecode(response.body) as Map<String, dynamic>;
+      
+      // FastAPI backend returns the data directly as the body
       return ApiResponse(
-        success: data['success'] ?? false,
-        message: data['message'] ?? 'Error desconocido',
-        data: data['data'] as Map<String, dynamic>?,
+        success: response.statusCode == 200,
+        message: response.statusCode == 200 ? 'Éxito' : 'Error del servidor',
+        data: data,
         statusCode: response.statusCode,
       );
     } catch (e) {
+      print('Search Error: $e');
       return ApiResponse(
         success: false,
         message: 'Error de conexión. Verifica tu red.',

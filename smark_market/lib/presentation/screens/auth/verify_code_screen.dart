@@ -41,11 +41,10 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
     setState(() => _isLoading = false);
 
     if (result.success) {
-      final resetToken = result.data?['resetToken'] as String?;
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (_) => NewPasswordScreen(resetToken: resetToken ?? ''),
+          builder: (_) => const NewPasswordScreen(),
         ),
       );
     } else {

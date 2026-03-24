@@ -6,8 +6,7 @@ import '../../widgets/sm_text_field.dart';
 import 'login_screen.dart';
 
 class NewPasswordScreen extends StatefulWidget {
-  final String resetToken;
-  const NewPasswordScreen({super.key, required this.resetToken});
+  const NewPasswordScreen({super.key});
 
   @override
   State<NewPasswordScreen> createState() => _NewPasswordScreenState();
@@ -32,9 +31,8 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
 
-    final result = await AuthRepository.changePassword(
+    final result = await AuthRepository.updatePassword(
       nuevaContrasena: _passwordController.text,
-      resetToken: widget.resetToken,
     );
 
     if (!mounted) return;

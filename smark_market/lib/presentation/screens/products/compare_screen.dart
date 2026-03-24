@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
-import '../../../data/models/mock_data.dart';
-import '../../../data/models/product_model.dart';
+import '../../../data/datasources/api_service.dart';
+import '../../../data/models/search_result_model.dart';
 
 class CompareScreen extends StatefulWidget {
   const CompareScreen({super.key});
@@ -10,14 +10,28 @@ class CompareScreen extends StatefulWidget {
 }
 
 class _CompareScreenState extends State<CompareScreen> {
-  String _selectedCategory = 'Todos';
-  final List<String> _categories = [
-    'Todos', 'Granos', 'Lácteos', 'Proteínas', 'Despensa', 'Panadería'
-  ];
+  final TextEditingController _searchController = TextEditingController();
+  bool _isLoading = false;
+  SearchResponse? _searchResponse;
 
-  List<Product> get _filtered {
-    if (_selectedCategory == 'Todos') return MockData.products;
-    return MockData.products.where((p) => p.category == _selectedCategory).toList();
+  Future<void> _performSearch(String query) async {
+    if (query.isEmpty) return;
+    setState(() => _isLoading = true);
+
+    final response = await ApiService.searchProducts(query);
+
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+        if (response.success && response.data != null) {
+          _searchResponse = SearchResponse.fromJson(response.data!);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(response.message)),
+          );
+        }
+      });
+    }
   }
 
   @override
@@ -33,52 +47,62 @@ class _CompareScreenState extends State<CompareScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text('Comparar precios',
-                    style: TextStyle(
-                      color: AppColors.textPrimary, fontSize: 24,
-                      fontWeight: FontWeight.w800, letterSpacing: -0.5)),
+                      style: TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 24,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: -0.5)),
                   const SizedBox(height: 4),
                   const Text('Encuentra el mejor precio por supermercado',
-                    style: TextStyle(color: AppColors.textSecondary, fontSize: 14)),
+                      style: TextStyle(
+                          color: AppColors.textSecondary, fontSize: 14)),
                   const SizedBox(height: 16),
-                  SizedBox(
-                    height: 36,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: _categories.length,
-                      itemBuilder: (_, i) {
-                        final cat = _categories[i];
-                        final isSelected = cat == _selectedCategory;
-                        return GestureDetector(
-                          onTap: () => setState(() => _selectedCategory = cat),
-                          child: Container(
-                            margin: const EdgeInsets.only(right: 8),
-                            padding: const EdgeInsets.symmetric(horizontal: 14),
-                            decoration: BoxDecoration(
-                              color: isSelected ? AppColors.primary : AppColors.cardBackground,
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(
-                                color: isSelected ? AppColors.primary : AppColors.border),
-                            ),
-                            alignment: Alignment.center,
-                            child: Text(cat, style: TextStyle(
-                              color: isSelected ? Colors.black : AppColors.textSecondary,
-                              fontSize: 13, fontWeight: FontWeight.w600)),
-                          ),
-                        );
-                      },
+
+                  // Search Bar
+                  TextField(
+                    controller: _searchController,
+                    onSubmitted: _performSearch,
+                    decoration: InputDecoration(
+                      hintText: 'Buscar producto (ej. Leche, Arroz...)',
+                      prefixIcon: const Icon(Icons.search_rounded),
+                      filled: true,
+                      fillColor: AppColors.cardBackground,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
             const SizedBox(height: 16),
-            Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                itemCount: _filtered.length,
-                itemBuilder: (_, i) => _ProductCompareCard(product: _filtered[i]),
+            if (_isLoading)
+              const Expanded(child: Center(child: CircularProgressIndicator()))
+            else if (_searchResponse == null)
+              const Expanded(
+                child: Center(
+                  child: Text('Busca algo para empezar a comparar',
+                      style: TextStyle(color: AppColors.textSecondary)),
+                ),
+              )
+            else if (_searchResponse!.results.isEmpty)
+              const Expanded(
+                child: Center(
+                  child: Text('No se encontraron productos',
+                      style: TextStyle(color: AppColors.textSecondary)),
+                ),
+              )
+            else
+              Expanded(
+                child: ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  itemCount: _searchResponse!.results.length,
+                  itemBuilder: (_, i) => _ProductResultCard(
+                    result: _searchResponse!.results[i],
+                  ),
+                ),
               ),
-            ),
           ],
         ),
       ),
@@ -86,122 +110,44 @@ class _CompareScreenState extends State<CompareScreen> {
   }
 }
 
-class _ProductCompareCard extends StatefulWidget {
-  final Product product;
-  const _ProductCompareCard({required this.product});
-  @override
-  State<_ProductCompareCard> createState() => _ProductCompareCardState();
-}
-
-class _ProductCompareCardState extends State<_ProductCompareCard> {
-  bool _expanded = false;
+class _ProductResultCard extends StatelessWidget {
+  final ProductResult result;
+  const _ProductResultCard({required this.result});
 
   @override
   Widget build(BuildContext context) {
-    final p = widget.product;
-    final sortedPrices = p.prices.entries.toList()
-      ..sort((a, b) => a.value.compareTo(b.value));
-
-    return Container(
+    return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: AppColors.cardBackground,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Column(
-        children: [
-          GestureDetector(
-            onTap: () => setState(() => _expanded = !_expanded),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  Text(p.imageEmoji, style: const TextStyle(fontSize: 28)),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(p.name, style: const TextStyle(
-                          color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600)),
-                        Text(p.unit,
-                          style: const TextStyle(color: AppColors.textHint, fontSize: 12)),
-                      ],
-                    ),
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text('\$${p.minPrice.toStringAsFixed(0)}',
-                        style: const TextStyle(
-                          color: AppColors.primary, fontSize: 16, fontWeight: FontWeight.w800)),
-                      Text('ahorra \$${p.savings.toStringAsFixed(0)}',
-                        style: const TextStyle(color: AppColors.textHint, fontSize: 11)),
-                    ],
-                  ),
-                  const SizedBox(width: 8),
-                  Icon(_expanded ? Icons.expand_less_rounded : Icons.expand_more_rounded,
-                    color: AppColors.textHint, size: 20),
-                ],
-              ),
+      color: AppColors.cardBackground,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: ListTile(
+        contentPadding: const EdgeInsets.all(16),
+        title: Text(result.title,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 8),
+            Text(
+              '${result.price} ${result.currency}',
+              style: const TextStyle(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 18),
             ),
-          ),
-          if (_expanded) ...[
-            const Divider(color: AppColors.border, height: 1),
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: sortedPrices.asMap().entries.map((e) {
-                  final isBest = e.key == 0;
-                  final entry = e.value;
-                  final barPct = entry.value / p.maxPrice;
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: Row(
-                      children: [
-                        SizedBox(
-                          width: 70,
-                          child: Text(entry.key, style: TextStyle(
-                            color: isBest ? AppColors.primary : AppColors.textSecondary,
-                            fontSize: 12,
-                            fontWeight: isBest ? FontWeight.w700 : FontWeight.w400)),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(4),
-                            child: LinearProgressIndicator(
-                              value: barPct,
-                              backgroundColor: AppColors.border,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                isBest ? AppColors.primary : AppColors.textHint),
-                              minHeight: 8,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        SizedBox(
-                          width: 70,
-                          child: Text('\$${entry.value.toStringAsFixed(0)}',
-                            textAlign: TextAlign.right,
-                            style: TextStyle(
-                              color: isBest ? AppColors.primary : AppColors.textSecondary,
-                              fontSize: 13,
-                              fontWeight: isBest ? FontWeight.w700 : FontWeight.w400)),
-                        ),
-                        if (isBest) ...[
-                          const SizedBox(width: 4),
-                          const Icon(Icons.star_rounded, color: AppColors.primary, size: 14),
-                        ],
-                      ],
-                    ),
-                  );
-                }).toList(),
-              ),
-            ),
+            const SizedBox(height: 4),
+            Text('Puntuación: ${result.score.toStringAsFixed(2)}',
+                style: const TextStyle(color: AppColors.textSecondary)),
           ],
-        ],
+        ),
+        trailing: IconButton(
+          icon: const Icon(Icons.open_in_new_rounded, color: AppColors.primary),
+          onPressed: () {
+            // Open link logic could go here
+          },
+        ),
       ),
     );
   }

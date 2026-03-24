@@ -1,14 +1,8 @@
 class AppConstants {
-  // Android emulator usa 10.0.2.2, iOS simulator usa localhost
-  static const String baseUrl = 'http://10.0.2.2:3000/api';
+  // Android emulator uses 10.0.2.2, iOS simulator uses localhost
+  static const String baseUrl = 'http://localhost:8000'; // Update to 10.0.2.2 for Android Emulator
 
-  static const String registerEndpoint = '/auth/register';
-  static const String loginEndpoint = '/auth/login';
-  static const String passwordResetRequestEndpoint = '/auth/password-reset/request';
-  static const String passwordResetVerifyEndpoint = '/auth/password-reset/verify';
-  static const String passwordResetChangeEndpoint = '/auth/password-reset/change';
-  static const String profileEndpoint = '/auth/profile';
+  static const String searchEndpoint = '/products/search';
 
-  static const String tokenKey = 'auth_token';
   static const String appName = 'Smart Market';
 }
