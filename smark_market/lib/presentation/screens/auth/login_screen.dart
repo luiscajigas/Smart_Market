@@ -6,7 +6,7 @@ import '../../widgets/sm_text_field.dart';
 import '../../widgets/logo_widget.dart';
 import 'register_screen.dart';
 import 'forgot_password_screen.dart';
-import '../home/home_screen.dart';
+import '../home/main_shell.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -45,7 +45,7 @@ class _LoginScreenState extends State<LoginScreen> {
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(
-            builder: (_) => HomeScreen(userData: result.data?['user'])),
+            builder: (_) => MainShell(userData: result.data?['user'])),
         (_) => false,
       );
     } else {

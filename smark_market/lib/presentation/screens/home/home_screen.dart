@@ -96,7 +96,7 @@ class HomeScreen extends StatelessWidget {
                       color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w700)),
                   const SizedBox(height: 12),
                   SizedBox(
-                    height: 100,
+                    height: 110,
                     child: ListView.builder(
                       scrollDirection: Axis.horizontal,
                       itemCount: MockData.supermarkets.length,
