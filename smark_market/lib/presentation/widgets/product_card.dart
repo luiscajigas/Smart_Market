@@ -21,7 +21,7 @@ class ProductCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(product.imageEmoji, style: const TextStyle(fontSize: 32)),
+              Icon(Icons.shopping_bag_outlined, color: AppColors.primary.withOpacity(0.5), size: 28),
               if (product.savings > 0)
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),

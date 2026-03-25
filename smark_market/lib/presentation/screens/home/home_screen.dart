@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
-import '../../../../core/constants/app_colors.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../core/constants/app_colors.dart';
 import '../../../data/models/mock_data.dart';
 import '../../widgets/savings_card.dart';
 import '../../widgets/ai_banner.dart';
 import '../../widgets/product_card.dart';
+import 'main_shell.dart';
+import '../products/product_list_screen.dart';
+import 'supermarket_map_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   final Map<String, dynamic>? userData;
@@ -11,7 +15,19 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final nombre = userData?['nombre'] ?? 'Usuario';
+    // Intentamos obtener el nombre de varias fuentes:
+    // 1. Del usuario actual de Supabase (Metadatos)
+    // 2. Del userData pasado (si existe)
+    // 3. 'Usuario' por defecto
+    final currentUser = Supabase.instance.client.auth.currentUser;
+    final metadata = currentUser?.userMetadata;
+
+    final nombre = metadata?['full_name'] ??
+        userData?['full_name'] ??
+        userData?['user_metadata']?['full_name'] ??
+        userData?['nombre'] ??
+        'Usuario';
+
     final products = MockData.products.take(4).toList();
 
     return Scaffold(
@@ -33,31 +49,38 @@ class HomeScreen extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Hola, $nombre 👋',
-                          style: const TextStyle(color: AppColors.textSecondary, fontSize: 14)),
+                        Text('Hola, $nombre',
+                            style: const TextStyle(
+                                color: AppColors.textSecondary, fontSize: 14)),
                         const SizedBox(height: 2),
                         const Text('¿Qué compramos hoy?',
-                          style: TextStyle(
-                            color: AppColors.textPrimary, fontSize: 22,
-                            fontWeight: FontWeight.w800, letterSpacing: -0.5)),
+                            style: TextStyle(
+                                color: AppColors.textPrimary,
+                                fontSize: 22,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: -0.5)),
                       ],
                     ),
-                    Container(
-                      width: 42, height: 42,
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+                    IconButton(
+                      onPressed: () => _showNotifications(context),
+                      icon: Container(
+                        width: 42,
+                        height: 42,
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                              color: AppColors.primary.withOpacity(0.3)),
+                        ),
+                        child: const Icon(Icons.notifications_outlined,
+                            color: AppColors.primary, size: 20),
                       ),
-                      child: const Icon(Icons.notifications_outlined,
-                        color: AppColors.primary, size: 20),
                     ),
                   ],
                 ),
               ),
             ),
           ),
-
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -65,35 +88,49 @@ class HomeScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Search bar
-                  Container(
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: AppColors.inputBackground,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: AppColors.border),
-                    ),
-                    child: const Row(
-                      children: [
-                        SizedBox(width: 16),
-                        Icon(Icons.search_rounded, color: AppColors.textHint, size: 20),
-                        SizedBox(width: 10),
-                        Text('Buscar productos...',
-                          style: TextStyle(color: AppColors.textHint, fontSize: 14)),
-                      ],
+                  GestureDetector(
+                    onTap: () {
+                      // Redirigir a la pestaña de comparar (índice 1 en MainShell)
+                      final state =
+                          context.findAncestorStateOfType<MainShellState>();
+                      if (state != null) {
+                        state.updateIndex(1);
+                      }
+                    },
+                    child: Container(
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: AppColors.inputBackground,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: AppColors.border),
+                      ),
+                      child: const Row(
+                        children: [
+                          SizedBox(width: 16),
+                          Icon(Icons.search_rounded,
+                              color: AppColors.textHint, size: 20),
+                          SizedBox(width: 10),
+                          Text('Buscar productos para comparar...',
+                              style: TextStyle(
+                                  color: AppColors.textHint, fontSize: 14)),
+                        ],
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 24),
 
                   const SavingsCard(),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 16),
 
                   const AiBanner(),
                   const SizedBox(height: 24),
 
                   // Supermarkets
                   const Text('Supermercados cercanos',
-                    style: TextStyle(
-                      color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w700)),
+                      style: TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800)),
                   const SizedBox(height: 12),
                   SizedBox(
                     height: 110,
@@ -101,27 +138,48 @@ class HomeScreen extends StatelessWidget {
                       scrollDirection: Axis.horizontal,
                       itemCount: MockData.supermarkets.length,
                       itemBuilder: (_, i) {
-                        final s = MockData.supermarkets[i];
-                        return Container(
-                          margin: const EdgeInsets.only(right: 12),
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                          decoration: BoxDecoration(
-                            color: AppColors.cardBackground,
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: AppColors.border),
-                          ),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(s.logo, style: const TextStyle(fontSize: 26)),
-                              const SizedBox(height: 6),
-                              Text(s.name, style: const TextStyle(
-                                color: AppColors.textPrimary, fontSize: 11, fontWeight: FontWeight.w600)),
-                              const SizedBox(height: 2),
-                              Text('${s.distance}km',
-                                style: const TextStyle(color: AppColors.textHint, fontSize: 10)),
-                            ],
+                        final shop = MockData.supermarkets[i];
+                        return GestureDetector(
+                          onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (_) =>
+                                      const SupermarketMapScreen())),
+                          child: Container(
+                            width: 80,
+                            margin: const EdgeInsets.only(right: 12),
+                            decoration: BoxDecoration(
+                              color: AppColors.cardBackground,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: AppColors.border),
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primary.withOpacity(0.1),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Text(shop.logo,
+                                      style: const TextStyle(
+                                          color: AppColors.primary,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.bold)),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(shop.name,
+                                    style: const TextStyle(
+                                        color: AppColors.textPrimary,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600)),
+                                Text('${shop.distance}km',
+                                    style: const TextStyle(
+                                        color: AppColors.textHint,
+                                        fontSize: 10)),
+                              ],
+                            ),
                           ),
                         );
                       },
@@ -133,20 +191,29 @@ class HomeScreen extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Productos destacados',
-                        style: TextStyle(
-                          color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w700)),
-                      Text('Ver todos',
-                        style: TextStyle(
-                          color: AppColors.primary, fontSize: 13, fontWeight: FontWeight.w600)),
+                      const Text('Productos destacados', //
+                          style: TextStyle(
+                              color: AppColors.textPrimary,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w800)),
+                      GestureDetector(
+                        onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => const ProductListScreen())),
+                        child: const Text('Ver todos',
+                            style: TextStyle(
+                                color: AppColors.primary,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600)),
+                      ),
                     ],
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 16),
                 ],
               ),
             ),
           ),
-
           SliverPadding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             sliver: SliverGrid(
@@ -162,8 +229,43 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
           ),
-
           const SliverToBoxAdapter(child: SizedBox(height: 24)),
+        ],
+      ),
+    );
+  }
+
+  void _showNotifications(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.cardBackground,
+        title: const Text('Notificaciones',
+            style: TextStyle(color: AppColors.textPrimary)),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: Icon(Icons.notifications_active_outlined,
+                  color: AppColors.primary),
+              title: Text('Oferta en Arroz',
+                  style: TextStyle(color: AppColors.textPrimary)),
+              subtitle: Text('Bajo un 10% en Éxito hoy.',
+                  style: TextStyle(color: AppColors.textSecondary)),
+            ),
+            ListTile(
+              leading: Icon(Icons.check_circle_outline, color: Colors.green),
+              title: Text('Búsqueda completada',
+                  style: TextStyle(color: AppColors.textPrimary)),
+              subtitle: Text('Encontramos 5 nuevas ofertas.',
+                  style: TextStyle(color: AppColors.textSecondary)),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cerrar')),
         ],
       ),
     );

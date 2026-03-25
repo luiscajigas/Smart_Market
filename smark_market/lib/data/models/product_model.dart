@@ -28,6 +28,8 @@ class Supermarket {
   final String logo;
   final double distance;
   final double rating;
+  final double? latitude;
+  final double? longitude;
 
   const Supermarket({
     required this.id,
@@ -35,6 +37,8 @@ class Supermarket {
     required this.logo,
     required this.distance,
     required this.rating,
+    this.latitude,
+    this.longitude,
   });
 }
 

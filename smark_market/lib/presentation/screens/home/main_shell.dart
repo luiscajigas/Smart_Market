@@ -11,12 +11,16 @@ class MainShell extends StatefulWidget {
   const MainShell({super.key, this.userData});
 
   @override
-  State<MainShell> createState() => _MainShellState();
+  State<MainShell> createState() => MainShellState();
 }
 
-class _MainShellState extends State<MainShell> {
+class MainShellState extends State<MainShell> {
   int _currentIndex = 0;
   late final List<Widget> _screens;
+
+  void updateIndex(int index) {
+    setState(() => _currentIndex = index);
+  }
 
   @override
   void initState() {

@@ -27,13 +27,25 @@ class LogoWidget extends StatelessWidget {
             ],
           ),
           child: Center(
-            child: Text(
-              'SM',
-              style: TextStyle(
-                color: Colors.black,
-                fontSize: size * 0.36,
-                fontWeight: FontWeight.w800,
-                letterSpacing: -0.5,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(size * 0.28),
+              child: Image.asset(
+                'assets/images/icon.jpg',
+                width: size,
+                height: size,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  // Fallback por si la imagen no existe todavía
+                  return Text(
+                    'SM',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: size * 0.36,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.5,
+                    ),
+                  );
+                },
               ),
             ),
           ),

@@ -94,18 +94,17 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text(
-                            'El futuro del\ncomercio digital',
+                            'Smart Market',
                             style: TextStyle(
                               color: AppColors.textPrimary,
-                              fontSize: 36,
-                              fontWeight: FontWeight.w800,
-                              height: 1.1,
-                              letterSpacing: -1.0,
+                              fontSize: 42,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: -1.5,
                             ),
                           ),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 8),
                           const Text(
-                            'Conecta, compra y vende de manera inteligente.',
+                            'Tu comparador inteligente de precios.',
                             style: TextStyle(
                               color: AppColors.textSecondary,
                               fontSize: 16,
