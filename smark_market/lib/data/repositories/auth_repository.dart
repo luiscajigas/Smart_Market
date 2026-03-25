@@ -40,12 +40,15 @@ class AuthRepository {
 
         return AuthResult(
           success: true,
-          message: 'Registro exitoso. Revisa tu correo.',
+          message: 'Registro exitoso.',
           data: {'user': response.user?.toJson()},
         );
       }
       return AuthResult(success: false, message: 'Error en el registro');
     } on AuthException catch (e) {
+      if (e.message.contains('already registered') || e.message.contains('already exists')) {
+        return AuthResult(success: false, message: 'Este correo ya está registrado. Intenta iniciar sesión.');
+      }
       return AuthResult(success: false, message: e.message);
     } catch (e) {
       return AuthResult(success: false, message: 'Ocurrió un error inesperado');
