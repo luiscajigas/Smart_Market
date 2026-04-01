@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_colors.dart';
 import '../../../data/models/mock_data.dart';
 import '../../widgets/recommendation_card.dart';
 

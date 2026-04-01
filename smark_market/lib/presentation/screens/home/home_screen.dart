@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../data/models/mock_data.dart';
+import '../../../data/providers/auth_provider.dart';
+import '../../../data/providers/product_provider.dart';
 import '../../widgets/savings_card.dart';
 import '../../widgets/ai_banner.dart';
 import '../../widgets/product_card.dart';
@@ -9,26 +11,34 @@ import 'main_shell.dart';
 import '../products/product_list_screen.dart';
 import 'supermarket_map_screen.dart';
 
-class HomeScreen extends StatelessWidget {
-  final Map<String, dynamic>? userData;
-  const HomeScreen({super.key, this.userData});
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Cargar productos destacados al iniciar
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<ProductProvider>().fetchFeaturedProducts();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    // Intentamos obtener el nombre de varias fuentes:
-    // 1. Del usuario actual de Supabase (Metadatos)
-    // 2. Del userData pasado (si existe)
-    // 3. 'Usuario' por defecto
-    final currentUser = Supabase.instance.client.auth.currentUser;
-    final metadata = currentUser?.userMetadata;
+    final authProvider = context.watch<AuthProvider>();
+    final productProvider = context.watch<ProductProvider>();
 
-    final nombre = metadata?['full_name'] ??
-        userData?['full_name'] ??
-        userData?['user_metadata']?['full_name'] ??
-        userData?['nombre'] ??
-        'Usuario';
+    final metadata = authProvider.currentUser?.userMetadata;
+    final nombre = metadata?['full_name'] ?? 'Usuario';
 
-    final products = MockData.products.take(4).toList();
+    final products = MockData.products
+        .take(4)
+        .toList(); // Usamos mock por ahora para el diseño
 
     return Scaffold(
       body: CustomScrollView(
@@ -216,18 +226,22 @@ class HomeScreen extends StatelessWidget {
           ),
           SliverPadding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
-            sliver: SliverGrid(
-              delegate: SliverChildBuilderDelegate(
-                (_, i) => ProductCard(product: products[i]),
-                childCount: products.length,
-              ),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-                childAspectRatio: 0.85,
-              ),
-            ),
+            sliver: productProvider.isLoading
+                ? const SliverFillRemaining(
+                    child: Center(child: CircularProgressIndicator()))
+                : SliverGrid(
+                    delegate: SliverChildBuilderDelegate(
+                      (_, i) => ProductCard(product: products[i]),
+                      childCount: products.length,
+                    ),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 12,
+                      mainAxisSpacing: 12,
+                      childAspectRatio: 0.85,
+                    ),
+                  ),
           ),
           const SliverToBoxAdapter(child: SizedBox(height: 24)),
         ],

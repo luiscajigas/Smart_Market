@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../../../core/constants/app_colors.dart';
-import '../../../data/datasources/api_service.dart';
+import 'package:provider/provider.dart';
+import '../../../core/constants/app_colors.dart';
+import '../../../data/providers/product_provider.dart';
 import '../../../data/models/search_result_model.dart';
 
 class CompareScreen extends StatefulWidget {
@@ -11,31 +12,32 @@ class CompareScreen extends StatefulWidget {
 
 class _CompareScreenState extends State<CompareScreen> {
   final TextEditingController _searchController = TextEditingController();
-  bool _isLoading = false;
-  SearchResponse? _searchResponse;
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   Future<void> _performSearch(String query) async {
     if (query.isEmpty) return;
-    setState(() => _isLoading = true);
+    await context.read<ProductProvider>().searchProducts(query);
 
-    final response = await ApiService.searchProducts(query);
-
-    if (mounted) {
-      setState(() {
-        _isLoading = false;
-        if (response.success && response.data != null) {
-          _searchResponse = SearchResponse.fromJson(response.data!);
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(response.message)),
-          );
-        }
-      });
+    if (mounted && context.read<ProductProvider>().errorMessage != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(context.read<ProductProvider>().errorMessage!),
+          backgroundColor: AppColors.error,
+        ),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final productProvider = context.watch<ProductProvider>();
+    final searchResponse = productProvider.lastSearch;
+
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -62,9 +64,12 @@ class _CompareScreenState extends State<CompareScreen> {
                   TextField(
                     controller: _searchController,
                     onSubmitted: _performSearch,
+                    style: const TextStyle(color: AppColors.textPrimary),
                     decoration: InputDecoration(
                       hintText: 'Buscar producto (ej. Leche, Arroz...)',
-                      prefixIcon: const Icon(Icons.search_rounded),
+                      hintStyle: const TextStyle(color: AppColors.textHint),
+                      prefixIcon: const Icon(Icons.search_rounded,
+                          color: AppColors.primary),
                       filled: true,
                       fillColor: AppColors.cardBackground,
                       border: OutlineInputBorder(
@@ -77,16 +82,19 @@ class _CompareScreenState extends State<CompareScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            if (_isLoading)
-              const Expanded(child: Center(child: CircularProgressIndicator()))
-            else if (_searchResponse == null)
+            if (productProvider.isLoading)
+              const Expanded(
+                  child: Center(
+                      child:
+                          CircularProgressIndicator(color: AppColors.primary)))
+            else if (searchResponse == null)
               const Expanded(
                 child: Center(
                   child: Text('Busca algo para empezar a comparar',
                       style: TextStyle(color: AppColors.textSecondary)),
                 ),
               )
-            else if (_searchResponse!.results.isEmpty)
+            else if (searchResponse.results.isEmpty)
               const Expanded(
                 child: Center(
                   child: Text('No se encontraron productos',
@@ -97,9 +105,9 @@ class _CompareScreenState extends State<CompareScreen> {
               Expanded(
                 child: ListView.builder(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
-                  itemCount: _searchResponse!.results.length,
+                  itemCount: searchResponse.results.length,
                   itemBuilder: (_, i) => _ProductResultCard(
-                    result: _searchResponse!.results[i],
+                    result: searchResponse.results[i],
                   ),
                 ),
               ),

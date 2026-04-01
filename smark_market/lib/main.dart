@@ -1,19 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:provider/provider.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'core/constants/app_constants.dart';
 import 'core/theme/app_theme.dart';
-import 'data/repositories/auth_repository.dart';
+import 'data/providers/auth_provider.dart';
+import 'data/providers/product_provider.dart';
 import 'presentation/screens/welcome/welcome_screen.dart';
 import 'presentation/screens/home/main_shell.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Load environment variables
+  await dotenv.load(fileName: ".env");
+
   // Initialize Supabase
   await Supabase.initialize(
-    url: 'https://ivrlgruvmmwhbzqrevdr.supabase.co',
-    anonKey:
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml2cmxncnV2bW13aGJ6cXJldmRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4ODI5MTAsImV4cCI6MjA4OTQ1ODkxMH0.eq9hN9MtkTL6B1_0sNqxVHJ-jJkq4NvQQKFqwZiZq_I',
+    url: AppConstants.supabaseUrl,
+    anonKey: AppConstants.supabaseAnonKey,
   );
 
   SystemChrome.setSystemUIOverlayStyle(
@@ -24,16 +30,25 @@ void main() async {
   );
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
-  final isLoggedIn = Supabase.instance.client.auth.currentSession != null;
-  runApp(SmartMarketApp(isLoggedIn: isLoggedIn));
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => ProductProvider()),
+      ],
+      child: const SmartMarketApp(),
+    ),
+  );
 }
 
 class SmartMarketApp extends StatelessWidget {
-  final bool isLoggedIn;
-  const SmartMarketApp({super.key, required this.isLoggedIn});
+  const SmartMarketApp({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = context.watch<AuthProvider>();
+    final isLoggedIn = authProvider.currentUser != null;
+
     return MaterialApp(
       title: 'Smart Market',
       debugShowCheckedModeBanner: false,

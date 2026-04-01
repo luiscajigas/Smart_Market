@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
-import '../../../data/repositories/auth_repository.dart';
+import 'package:provider/provider.dart';
+import '../../../data/providers/auth_provider.dart';
 import '../../widgets/sm_button.dart';
 import '../../widgets/sm_text_field.dart';
 import '../../widgets/logo_widget.dart';
@@ -20,7 +21,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmController = TextEditingController();
-  bool _isLoading = false;
   bool _obscurePassword = true;
   bool _obscureConfirm = true;
 
@@ -35,37 +35,41 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   Future<void> _register() async {
     if (!_formKey.currentState!.validate()) return;
-    setState(() => _isLoading = true);
 
-    final result = await AuthRepository.register(
-      nombre: _nameController.text.trim(),
-      email: _emailController.text.trim(),
-      contrasena: _passwordController.text,
+    final authProvider = context.read<AuthProvider>();
+    final success = await authProvider.register(
+      _nameController.text.trim(),
+      _emailController.text.trim(),
+      _passwordController.text,
     );
 
-    if (!mounted) return;
-    setState(() => _isLoading = false);
-
-    if (result.success) {
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(
-            builder: (_) => MainShell(userData: result.data?['user'])),
-        (_) => false,
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(result.message),
-        backgroundColor: AppColors.error,
-      ));
+    if (mounted) {
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Cuenta creada con éxito'),
+          backgroundColor: Colors.green,
+        ));
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => const MainShell()),
+          (_) => false,
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(authProvider.errorMessage ?? 'Error al crear cuenta'),
+          backgroundColor: AppColors.error,
+        ));
+      }
     }
   }
 
   String? _validatePassword(String? v) {
     if (v == null || v.isEmpty) return 'La contraseña es requerida';
     if (v.length < 8) return 'Mínimo 8 caracteres';
-    if (!v.contains(RegExp(r'[A-Z]'))) return 'Debe tener al menos una mayúscula';
-    if (!v.contains(RegExp(r'[a-z]'))) return 'Debe tener al menos una minúscula';
+    if (!v.contains(RegExp(r'[A-Z]')))
+      return 'Debe tener al menos una mayúscula';
+    if (!v.contains(RegExp(r'[a-z]')))
+      return 'Debe tener al menos una minúscula';
     if (!v.contains(RegExp(r'[0-9]'))) return 'Debe tener al menos un número';
     return null;
   }
@@ -123,8 +127,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   label: 'Correo electrónico',
                   hint: 'tu@correo.com',
                   keyboardType: TextInputType.emailAddress,
-                  prefixIcon:
-                      const Icon(Icons.mail_outline_rounded, size: 20),
+                  prefixIcon: const Icon(Icons.mail_outline_rounded, size: 20),
                   validator: (v) {
                     if (v == null || v.isEmpty) return 'El correo es requerido';
                     if (!RegExp(r'^[\w.-]+@[\w.-]+\.\w+$').hasMatch(v))
@@ -138,8 +141,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   label: 'Contraseña',
                   hint: '••••••••',
                   obscureText: _obscurePassword,
-                  prefixIcon:
-                      const Icon(Icons.lock_outline_rounded, size: 20),
+                  prefixIcon: const Icon(Icons.lock_outline_rounded, size: 20),
                   suffixIcon: IconButton(
                     icon: Icon(
                       _obscurePassword
@@ -160,8 +162,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   obscureText: _obscureConfirm,
                   textInputAction: TextInputAction.done,
                   onFieldSubmitted: (_) => _register(),
-                  prefixIcon:
-                      const Icon(Icons.lock_outline_rounded, size: 20),
+                  prefixIcon: const Icon(Icons.lock_outline_rounded, size: 20),
                   suffixIcon: IconButton(
                     icon: Icon(
                       _obscureConfirm
@@ -180,10 +181,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   },
                 ),
                 const SizedBox(height: 32),
-                SmButton(
+                Consumer<AuthProvider>(
+                  builder: (context, auth, _) => SmButton(
                     label: 'Crear cuenta',
                     onPressed: _register,
-                    isLoading: _isLoading),
+                    isLoading: auth.isLoading,
+                  ),
+                ),
                 const SizedBox(height: 32),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -193,8 +197,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     TextButton(
                       onPressed: () => Navigator.pushReplacement(
                         context,
-                        MaterialPageRoute(
-                            builder: (_) => const LoginScreen()),
+                        MaterialPageRoute(builder: (_) => const LoginScreen()),
                       ),
                       child: const Text('Inicia sesión'),
                     ),

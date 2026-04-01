@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
-import '../../../data/repositories/auth_repository.dart';
+import 'package:provider/provider.dart';
+import '../../../data/providers/auth_provider.dart';
 import '../../widgets/sm_button.dart';
 import '../../widgets/sm_text_field.dart';
 import '../../widgets/logo_widget.dart';
@@ -19,7 +20,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  bool _isLoading = false;
   bool _obscurePassword = true;
 
   @override
@@ -31,28 +31,24 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _login() async {
     if (!_formKey.currentState!.validate()) return;
-    setState(() => _isLoading = true);
 
-    final result = await AuthRepository.login(
-      email: _emailController.text.trim(),
-      contrasena: _passwordController.text,
+    final authProvider = context.read<AuthProvider>();
+    final success = await authProvider.login(
+      _emailController.text.trim(),
+      _passwordController.text,
     );
 
-    if (!mounted) return;
-    setState(() => _isLoading = false);
-
-    if (result.success) {
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(
-            builder: (_) => MainShell(userData: result.data?['user'])),
-        (_) => false,
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(result.message),
-        backgroundColor: AppColors.error,
-      ));
+    if (mounted) {
+      if (success) {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => const MainShell()),
+          (route) => false,
+        );      } else {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(authProvider.errorMessage ?? 'Error al iniciar sesión'),
+          backgroundColor: AppColors.error,
+        ));
+      }
     }
   }
 
@@ -146,9 +142,10 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 24),
                 SmButton(
-                    label: 'Iniciar sesión',
-                    onPressed: _login,
-                    isLoading: _isLoading),
+                  label: 'Iniciar sesión',
+                  onPressed: _login,
+                  isLoading: context.watch<AuthProvider>().isLoading,
+                ),
                 const SizedBox(height: 32),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,

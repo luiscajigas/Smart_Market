@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../../../core/constants/app_colors.dart';
+import 'package:provider/provider.dart';
+import '../../../core/constants/app_colors.dart';
+import '../../../data/providers/auth_provider.dart';
 import 'home_screen.dart';
 import '../products/compare_screen.dart';
 import '../ai/ai_screen.dart';
@@ -7,8 +9,7 @@ import '../history/history_screen.dart';
 import '../profile/profile_screen.dart';
 
 class MainShell extends StatefulWidget {
-  final Map<String, dynamic>? userData;
-  const MainShell({super.key, this.userData});
+  const MainShell({super.key});
 
   @override
   State<MainShell> createState() => MainShellState();
@@ -26,11 +27,11 @@ class MainShellState extends State<MainShell> {
   void initState() {
     super.initState();
     _screens = [
-      HomeScreen(userData: widget.userData),
+      const HomeScreen(),
       const CompareScreen(),
       const AiScreen(),
       const HistoryScreen(),
-      ProfileScreen(userData: widget.userData),
+      const ProfileScreen(),
     ];
   }
 
@@ -48,11 +49,37 @@ class MainShellState extends State<MainShell> {
             height: 60,
             child: Row(
               children: [
-                _NavItem(icon: Icons.home_rounded, label: 'Inicio', index: 0, current: _currentIndex, onTap: (i) => setState(() => _currentIndex = i)),
-                _NavItem(icon: Icons.compare_arrows_rounded, label: 'Comparar', index: 1, current: _currentIndex, onTap: (i) => setState(() => _currentIndex = i)),
-                _NavItem(icon: Icons.auto_awesome_rounded, label: 'IA', index: 2, current: _currentIndex, onTap: (i) => setState(() => _currentIndex = i), isAi: true),
-                _NavItem(icon: Icons.receipt_long_rounded, label: 'Historial', index: 3, current: _currentIndex, onTap: (i) => setState(() => _currentIndex = i)),
-                _NavItem(icon: Icons.person_rounded, label: 'Perfil', index: 4, current: _currentIndex, onTap: (i) => setState(() => _currentIndex = i)),
+                _NavItem(
+                    icon: Icons.home_rounded,
+                    label: 'Inicio',
+                    index: 0,
+                    current: _currentIndex,
+                    onTap: (i) => setState(() => _currentIndex = i)),
+                _NavItem(
+                    icon: Icons.compare_arrows_rounded,
+                    label: 'Comparar',
+                    index: 1,
+                    current: _currentIndex,
+                    onTap: (i) => setState(() => _currentIndex = i)),
+                _NavItem(
+                    icon: Icons.auto_awesome_rounded,
+                    label: 'IA',
+                    index: 2,
+                    current: _currentIndex,
+                    onTap: (i) => setState(() => _currentIndex = i),
+                    isAi: true),
+                _NavItem(
+                    icon: Icons.receipt_long_rounded,
+                    label: 'Historial',
+                    index: 3,
+                    current: _currentIndex,
+                    onTap: (i) => setState(() => _currentIndex = i)),
+                _NavItem(
+                    icon: Icons.person_rounded,
+                    label: 'Perfil',
+                    index: 4,
+                    current: _currentIndex,
+                    onTap: (i) => setState(() => _currentIndex = i)),
               ],
             ),
           ),
@@ -91,21 +118,25 @@ class _NavItem extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                width: 44, height: 32,
+                width: 44,
+                height: 32,
                 decoration: BoxDecoration(
                   gradient: isActive
                       ? AppColors.primaryGradient
-                      : const LinearGradient(colors: [AppColors.border, AppColors.border]),
+                      : const LinearGradient(
+                          colors: [AppColors.border, AppColors.border]),
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: Icon(icon, size: 18,
-                  color: isActive ? Colors.black : AppColors.textHint),
+                child: Icon(icon,
+                    size: 18,
+                    color: isActive ? Colors.black : AppColors.textHint),
               ),
               const SizedBox(height: 2),
-              Text(label, style: TextStyle(
-                fontSize: 10,
-                color: isActive ? AppColors.primary : AppColors.textHint,
-                fontWeight: FontWeight.w600)),
+              Text(label,
+                  style: TextStyle(
+                      fontSize: 10,
+                      color: isActive ? AppColors.primary : AppColors.textHint,
+                      fontWeight: FontWeight.w600)),
             ],
           ),
         ),
@@ -118,13 +149,15 @@ class _NavItem extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 22,
-              color: isActive ? AppColors.primary : AppColors.textHint),
+            Icon(icon,
+                size: 22,
+                color: isActive ? AppColors.primary : AppColors.textHint),
             const SizedBox(height: 2),
-            Text(label, style: TextStyle(
-              fontSize: 10,
-              color: isActive ? AppColors.primary : AppColors.textHint,
-              fontWeight: isActive ? FontWeight.w600 : FontWeight.w400)),
+            Text(label,
+                style: TextStyle(
+                    fontSize: 10,
+                    color: isActive ? AppColors.primary : AppColors.textHint,
+                    fontWeight: isActive ? FontWeight.w600 : FontWeight.w400)),
           ],
         ),
       ),
