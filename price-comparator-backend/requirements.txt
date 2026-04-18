@@ -1,5 +1,10 @@
 fastapi
 uvicorn
-requests
+scrapy
+pyspark
+pydantic
+pydantic-settings
 python-dotenv
 supabase
+pandas
+httpx
