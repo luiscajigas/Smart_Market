@@ -5,17 +5,19 @@ from typing import List
 import re
 
 class DataProcessor:
-    def __init__(self):
+    def __init__(self, use_spark: bool = False):
         self.spark = None
-        try:
-            # Try to initialize Spark, but don't fail if it doesn't work
-            self.spark = SparkSession.builder \
-                .appName("SmartPriceDataCleaner") \
-                .master("local[1]") \
-                .getOrCreate()
-            self.spark.sparkContext.setLogLevel("ERROR")
-        except Exception as e:
-            print(f"Warning: Spark could not be initialized, using Python fallback. Error: {e}")
+        self.use_spark = use_spark
+        if use_spark:
+            try:
+                # Try to initialize Spark only if explicitly requested
+                self.spark = SparkSession.builder \
+                    .appName("SmartPriceDataCleaner") \
+                    .master("local[1]") \
+                    .getOrCreate()
+                self.spark.sparkContext.setLogLevel("ERROR")
+            except Exception as e:
+                print(f"Warning: Spark could not be initialized, using Python fallback. Error: {e}")
 
     def _normalize_text(self, text: str) -> str:
         if not text:

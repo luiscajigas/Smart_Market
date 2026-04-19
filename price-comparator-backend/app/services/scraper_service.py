@@ -1,32 +1,28 @@
-from multiprocessing.pool import ThreadPool
+import asyncio
 from app.connectors.alkosto_spider import search_product as search_alkosto
 from app.connectors.exito_spider import search_product as search_exito
 from app.connectors.jumbo_spider import search_product as search_jumbo
-from typing import List, Generator
+from typing import List, AsyncGenerator
 
-def run_search(func_query_tuple):
-    func, query = func_query_tuple
-    return func(query)
-
-def get_all_products_stream(query: str) -> Generator[List[dict], None, None]:
+async def get_all_products_stream(query: str) -> AsyncGenerator[List[dict], None]:
     """
-    Yields results from each spider as soon as they finish.
+    Yields results from each spider as soon as they finish using asyncio.
     """
-    search_tasks = [
-        (search_alkosto, query),
-        (search_exito, query),
-        (search_jumbo, query)
+    tasks = [
+        search_alkosto(query),
+        search_exito(query),
+        search_jumbo(query)
     ]
     
-    with ThreadPool(processes=3) as pool:
-        # imap_unordered returns results as they become available
-        for results in pool.imap_unordered(run_search, search_tasks):
-            if results:
-                yield results
+    # Run all tasks in parallel and yield results as they complete
+    for task in asyncio.as_completed(tasks):
+        results = await task
+        if results:
+            yield results
 
-def get_all_products(query: str) -> List[dict]:
-    # Original method for backward compatibility if needed
+async def get_all_products(query: str) -> List[dict]:
+    # Returns all results combined
     all_results = []
-    for results in get_all_products_stream(query):
+    async for results in get_all_products_stream(query):
         all_results.extend(results)
     return all_results

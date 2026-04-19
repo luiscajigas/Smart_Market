@@ -1,7 +1,7 @@
 import httpx
 from typing import List
 
-def search_product(query: str) -> List[dict]:
+async def search_product(query: str) -> List[dict]:
     """
     Search products using Jumbo's VTEX API.
     """
@@ -14,8 +14,8 @@ def search_product(query: str) -> List[dict]:
     results = []
     try:
         # verify=False might be needed if SSL issues persist in the environment
-        with httpx.Client(verify=False) as client:
-            response = client.get(url, headers=headers, timeout=20, follow_redirects=True)
+        async with httpx.AsyncClient(verify=False) as client:
+            response = await client.get(url, headers=headers, timeout=20, follow_redirects=True)
             if response.status_code in [200, 206]:
                 products = response.json()
                 for p in products:

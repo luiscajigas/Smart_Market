@@ -8,13 +8,13 @@ from app.services.product_service import search_and_save_products, get_products,
 router = APIRouter()
 
 @router.get("/search", response_model=List[ProductResponse])
-def search_products(q: str = Query(..., min_length=1), supabase: Client = Depends(get_supabase)):
+async def search_products(q: str = Query(..., min_length=1), supabase: Client = Depends(get_supabase)):
     """
     Search for products in Alkosto, Éxito and Jumbo, process them with Spark, 
     save to Supabase and return the clean data.
     """
     try:
-        results = search_and_save_products(supabase, q)
+        results = await search_and_save_products(supabase, q)
         return results
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error processing search: {str(e)}")

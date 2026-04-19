@@ -2,20 +2,39 @@ from supabase import Client
 from app.services.scraper_service import get_all_products_stream
 from app.spark.processor import DataProcessor
 from typing import List
+from datetime import datetime, timedelta
 
-def search_and_save_products(supabase: Client, query: str) -> List[dict]:
-    # 1. Initialize Processor
-    processor = DataProcessor()
+async def search_and_save_products(supabase: Client, query: str) -> List[dict]:
+    # 1. Check Cache first (if we have fresh results in the last hour)
+    one_hour_ago = (datetime.now() - timedelta(hours=1)).isoformat()
+    try:
+        # We run the DB query in a way that doesn't block if possible, 
+        # but supabase-py is mostly synchronous. 
+        cached_response = supabase.table("products") \
+            .select("*") \
+            .ilike("name", f"%{query}%") \
+            .gt("created_at", one_hour_ago) \
+            .limit(100) \
+            .execute()
+        
+        if cached_response.data and len(cached_response.data) >= 20:
+            print(f"Returning {len(cached_response.data)} cached results for: {query}")
+            return cached_response.data
+    except Exception as e:
+        print(f"Cache check failed: {e}")
+
+    # 2. Initialize Processor (Spark is disabled by default for speed)
+    processor = DataProcessor(use_spark=False)
     all_processed_results = []
     base_columns = ["name", "brand", "price", "currency", "images", "description", "stock", "category", "source"]
 
     try:
-        # 2. Scrape and process simultaneously as results arrive
-        for spider_results in get_all_products_stream(query):
+        # 3. Scrape and process simultaneously as results arrive
+        async for spider_results in get_all_products_stream(query):
             if not spider_results:
                 continue
                 
-            # Process this batch immediately with Spark/Python
+            # Process this batch immediately
             processed_batch = processor.process_data(spider_results, query)
             
             if processed_batch:
