@@ -7,6 +7,7 @@ import 'core/constants/app_constants.dart';
 import 'core/theme/app_theme.dart';
 import 'data/providers/auth_provider.dart';
 import 'data/providers/product_provider.dart';
+import 'data/providers/settings_provider.dart';
 import 'presentation/screens/welcome/welcome_screen.dart';
 import 'presentation/screens/home/main_shell.dart';
 
@@ -35,6 +36,7 @@ void main() async {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => ProductProvider()),
+        ChangeNotifierProvider(create: (_) => SettingsProvider()),
       ],
       child: const SmartMarketApp(),
     ),

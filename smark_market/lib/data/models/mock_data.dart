@@ -2,10 +2,9 @@ import 'product_model.dart';
 
 class MockData {
   static const List<Supermarket> supermarkets = [
-    Supermarket(id: 'exito', name: 'Éxito', logo: 'EX', distance: 1.2, rating: 4.5, latitude: 3.4516, longitude: -76.5320),
-    Supermarket(id: 'jumbo', name: 'Jumbo', logo: 'JB', distance: 2.8, rating: 4.3, latitude: 3.4600, longitude: -76.5300),
-    Supermarket(id: 'carulla', name: 'Carulla', logo: 'CR', distance: 0.8, rating: 4.7, latitude: 3.4400, longitude: -76.5400),
-    Supermarket(id: 'metro', name: 'Metro', logo: 'MT', distance: 3.5, rating: 4.1, latitude: 3.4700, longitude: -76.5200),
+    Supermarket(id: 'alkosto', name: 'Alkosto', logo: 'AK', distance: 0.5, rating: 4.8, latitude: 1.2136, longitude: -77.2811),
+    Supermarket(id: 'exito', name: 'Éxito', logo: 'EX', distance: 1.2, rating: 4.5, latitude: 1.2089, longitude: -77.2778),
+    Supermarket(id: 'unico', name: 'Unicentro', logo: 'UC', distance: 2.1, rating: 4.4, latitude: 1.2222, longitude: -77.2855),
   ];
 
   static final List<Product> products = [

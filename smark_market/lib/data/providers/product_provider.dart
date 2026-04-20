@@ -36,7 +36,7 @@ class ProductProvider extends ChangeNotifier {
     final response = await ApiService.searchProducts(query);
 
     if (response.success && response.data != null) {
-      _lastSearch = SearchResponse.fromJson(response.data!);
+      _lastSearch = SearchResponse.fromList(response.data!, query);
       _products = _lastSearch!.results;
       if (_products.isEmpty) _setError(AppMessages.noResults);
     } else {
@@ -50,7 +50,8 @@ class ProductProvider extends ChangeNotifier {
     // Simulación de productos destacados o una búsqueda por defecto
     final response = await ApiService.searchProducts('arroz');
     if (response.success && response.data != null) {
-      _products = SearchResponse.fromJson(response.data!).results;
+      _lastSearch = SearchResponse.fromList(response.data!, 'arroz');
+      _products = _lastSearch!.results;
     }
     _setLoading(false);
   }

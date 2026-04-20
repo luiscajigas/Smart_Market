@@ -26,7 +26,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
     if (mounted) {
       setState(() {
         if (response.success && response.data != null) {
-          final searchResponse = SearchResponse.fromJson(response.data!);
+          final searchResponse = SearchResponse.fromList(response.data!, 'arroz');
           _products = searchResponse.results;
         }
         _isLoading = false;
@@ -75,12 +75,30 @@ class _ProductListScreenState extends State<ProductListScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Expanded(
-                            child: Center(
-                              child: Icon(Icons.inventory_2_outlined, color: AppColors.primary.withOpacity(0.5), size: 48),
-                            ),
-                          ),
+                                child: Center(
+                                  child: product.images.isNotEmpty
+                                      ? ClipRRect(
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                          child: Image.network(
+                                            product.images.first,
+                                            fit: BoxFit.cover,
+                                            errorBuilder: (context, error,
+                                                    stackTrace) =>
+                                                Icon(Icons.inventory_2_outlined,
+                                                    color: AppColors.primary
+                                                        .withOpacity(0.5),
+                                                    size: 48),
+                                          ),
+                                        )
+                                      : Icon(Icons.inventory_2_outlined,
+                                          color: AppColors.primary
+                                              .withOpacity(0.5),
+                                          size: 48),
+                                ),
+                              ),
                               const SizedBox(height: 8),
-                              Text(product.title,
+                              Text(product.name,
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
                                   style: const TextStyle(
@@ -88,17 +106,18 @@ class _ProductListScreenState extends State<ProductListScreen> {
                                       fontWeight: FontWeight.bold,
                                       fontSize: 13)),
                               const SizedBox(height: 4),
-                              Text('\$${product.price}',
+                              Text(
+                                  '\$${product.price.toStringAsFixed(0).replaceAllMapped(RegExp(r"(\d{1,3})(?=(\d{3})+(?!\d))"), (Match m) => "${m[1]}.")}',
                                   style: const TextStyle(
                                       color: AppColors.primary,
                                       fontWeight: FontWeight.w800,
                                       fontSize: 15)),
                               const SizedBox(height: 2),
-                              Text(
-                                  'Puntuación: ${product.score.toStringAsFixed(1)}',
+                              Text(product.source.toUpperCase(),
                                   style: const TextStyle(
                                       color: AppColors.textSecondary,
-                                      fontSize: 11)),
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold)),
                             ],
                           ),
                         ),

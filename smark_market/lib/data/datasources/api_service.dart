@@ -35,13 +35,24 @@ class ApiService {
           )
           .timeout(const Duration(seconds: 15));
 
-      final data = jsonDecode(response.body) as Map<String, dynamic>;
-      return ApiResponse(
-        success: data['success'] ?? false,
-        message: data['message'] ?? 'Error desconocido',
-        data: data['data'] as Map<String, dynamic>?,
-        statusCode: response.statusCode,
-      );
+      final data = jsonDecode(response.body);
+
+      if (data is Map<String, dynamic>) {
+        return ApiResponse(
+          success: data['success'] ??
+              (response.statusCode >= 200 && response.statusCode < 300),
+          message: data['message'] ?? 'Éxito',
+          data: data,
+          statusCode: response.statusCode,
+        );
+      } else {
+        return ApiResponse(
+          success: response.statusCode >= 200 && response.statusCode < 300,
+          message: 'Éxito',
+          data: {'results': data},
+          statusCode: response.statusCode,
+        );
+      }
     } catch (e) {
       return ApiResponse(
         success: false,
@@ -51,21 +62,35 @@ class ApiService {
     }
   }
 
-  static Future<ApiResponse<Map<String, dynamic>>> searchProducts(String query) async {
+  static Future<ApiResponse<List<dynamic>>> searchProducts(String query) async {
+    final url = '${AppConstants.baseUrl}/search?q=$query';
+    print('Connecting to: $url');
     try {
-      final response = await http.get(
-        Uri.parse('${AppConstants.baseUrl}${AppConstants.searchEndpoint}?query=$query'),
-      ).timeout(const Duration(seconds: 30));
+      // Usar query parameter 'q' según el backend
+      final response = await http
+          .get(
+            Uri.parse(url),
+          )
+          .timeout(
+              const Duration(seconds: 45)); // Aumentar timeout para scraping
 
-      final data = jsonDecode(response.body) as Map<String, dynamic>;
-      
-      // FastAPI backend returns the data directly as the body
-      return ApiResponse(
-        success: response.statusCode == 200,
-        message: response.statusCode == 200 ? 'Éxito' : 'Error del servidor',
-        data: data,
-        statusCode: response.statusCode,
-      );
+      print('Response Status: ${response.statusCode}');
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode == 200 && data is List) {
+        return ApiResponse(
+          success: true,
+          message: 'Éxito',
+          data: data,
+          statusCode: response.statusCode,
+        );
+      } else {
+        return ApiResponse(
+          success: false,
+          message: 'Error del servidor o formato inválido',
+          statusCode: response.statusCode,
+        );
+      }
     } catch (e) {
       print('Search Error: $e');
       return ApiResponse(
