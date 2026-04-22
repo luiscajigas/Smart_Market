@@ -3,14 +3,16 @@ class Product {
   final String name;
   final String category;
   final String imageEmoji;
+  final String? imageUrl; // Nuevo campo para imagen real
   final Map<String, double> prices;
   final String unit;
 
-  const Product({
+  Product({
     required this.id,
     required this.name,
     required this.category,
     required this.imageEmoji,
+    this.imageUrl,
     required this.prices,
     required this.unit,
   });

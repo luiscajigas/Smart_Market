@@ -36,9 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final metadata = authProvider.currentUser?.userMetadata;
     final nombre = metadata?['full_name'] ?? 'Usuario';
 
-    final products = MockData.products
-        .take(4)
-        .toList(); // Usamos mock por ahora para el diseño
+    final products = productProvider.groupedProducts.take(4).toList();
 
     return Scaffold(
       body: CustomScrollView(

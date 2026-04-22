@@ -13,6 +13,7 @@ class ProductResult {
   final String? url;
   final String? sku;
   final String? productId;
+  bool isFavorite;
 
   ProductResult({
     required this.name,
@@ -29,6 +30,7 @@ class ProductResult {
     this.url,
     this.sku,
     this.productId,
+    this.isFavorite = false,
   });
 
   factory ProductResult.fromJson(Map<String, dynamic> json) {
@@ -47,7 +49,27 @@ class ProductResult {
       url: json['url'],
       sku: json['sku'],
       productId: json['product_id'],
+      isFavorite: json['is_favorite'] ?? false,
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'brand': brand,
+      'price': price,
+      'old_price': oldPrice,
+      'discount': discount,
+      'currency': currency,
+      'images': images,
+      'description': description,
+      'stock': stock,
+      'category': category,
+      'source': source,
+      'url': url,
+      'sku': sku,
+      'product_id': productId,
+    };
   }
 }
 

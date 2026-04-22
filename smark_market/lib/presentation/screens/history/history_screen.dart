@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../data/providers/favorites_provider.dart';
+import '../../../data/models/search_result_model.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
@@ -9,20 +12,28 @@ class HistoryScreen extends StatefulWidget {
   State<HistoryScreen> createState() => _HistoryScreenState();
 }
 
-class _HistoryScreenState extends State<HistoryScreen> {
+class _HistoryScreenState extends State<HistoryScreen>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
   bool _isLoading = true;
-  List<dynamic> _history = [];
+  List<Map<String, dynamic>> _history = [];
 
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 2, vsync: this);
     _fetchHistory();
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   Future<void> _fetchHistory() async {
     try {
       final supabase = Supabase.instance.client;
-      // Consultamos la tabla 'results' que es donde el backend guarda las búsquedas
       final response = await supabase
           .from('results')
           .select()
@@ -31,7 +42,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
       if (mounted) {
         setState(() {
-          _history = response;
+          _history = List<Map<String, dynamic>>.from(response);
           _isLoading = false;
         });
       }
@@ -43,159 +54,132 @@ class _HistoryScreenState extends State<HistoryScreen> {
     }
   }
 
-  String _formatDate(String dateStr) {
-    try {
-      final d = DateTime.parse(dateStr);
-      final diff = DateTime.now().difference(d).inDays;
-      if (diff == 0) return 'Hoy';
-      if (diff == 1) return 'Ayer';
-      return 'Hace $diff días';
-    } catch (e) {
-      return 'Reciente';
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
+              padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Historial de Búsquedas',
+                  const Text('Historial y Favoritos',
                       style: TextStyle(
                           color: AppColors.textPrimary,
                           fontSize: 24,
                           fontWeight: FontWeight.w800,
                           letterSpacing: -0.5)),
-                  const SizedBox(height: 4),
-                  const Text('Lo que has comparado recientemente',
-                      style: TextStyle(
-                          color: AppColors.textSecondary, fontSize: 14)),
                   const SizedBox(height: 16),
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: AppColors.cardBackground,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: AppColors.border),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        _SummaryItem(
-                            label: 'Búsquedas',
-                            value: '${_history.length}',
-                            color: AppColors.primary),
-                        Container(
-                            width: 1, height: 40, color: AppColors.border),
-                        const _SummaryItem(
-                            label: 'Estado',
-                            value: 'Sincronizado',
-                            color: Color(0xFF00BCD4)),
-                      ],
-                    ),
+                  TabBar(
+                    controller: _tabController,
+                    indicatorColor: AppColors.primary,
+                    labelColor: AppColors.primary,
+                    unselectedLabelColor: AppColors.textSecondary,
+                    indicatorSize: TabBarIndicatorSize.label,
+                    tabs: const [
+                      Tab(text: 'Historial'),
+                      Tab(text: 'Favoritos'),
+                    ],
                   ),
                 ],
               ),
             ),
             Expanded(
-              child: _isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : _history.isEmpty
-                      ? const Center(
-                          child: Text('No hay búsquedas recientes',
-                              style: TextStyle(color: AppColors.textSecondary)))
-                      : RefreshIndicator(
-                          onRefresh: _fetchHistory,
-                          child: ListView.separated(
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
-                            itemCount: _history.length,
-                            separatorBuilder: (_, __) =>
-                                const SizedBox(height: 8),
-                            itemBuilder: (_, i) {
-                              final h = _history[i];
-                              return Container(
-                                padding: const EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  color: AppColors.cardBackground,
-                                  borderRadius: BorderRadius.circular(14),
-                                  border: Border.all(color: AppColors.border),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Container(
-                                      width: 48,
-                                      height: 48,
-                                      decoration: BoxDecoration(
-                                        color: AppColors.inputBackground,
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: const Center(
-                                          child: Icon(Icons.search_rounded,
-                                              color: AppColors.primary,
-                                              size: 24)),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(h['query'] ?? 'Sin consulta',
-                                              style: const TextStyle(
-                                                  color: AppColors.textPrimary,
-                                                  fontSize: 14,
-                                                  fontWeight: FontWeight.w600)),
-                                          const SizedBox(height: 2),
-                                          Text(h['title'] ?? 'Producto',
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: const TextStyle(
-                                                  color:
-                                                      AppColors.textSecondary,
-                                                  fontSize: 12)),
-                                          const SizedBox(height: 2),
-                                          Row(
-                                            children: [
-                                              Text('\$${h['price']}',
-                                                  style: const TextStyle(
-                                                      color: AppColors.primary,
-                                                      fontSize: 12,
-                                                      fontWeight:
-                                                          FontWeight.bold)),
-                                              const Text(' · ',
-                                                  style: TextStyle(
-                                                      color:
-                                                          AppColors.textHint)),
-                                              Text(
-                                                  _formatDate(
-                                                      h['created_at'] ?? ''),
-                                                  style: const TextStyle(
-                                                      color: AppColors.textHint,
-                                                      fontSize: 12)),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    const Icon(Icons.chevron_right_rounded,
-                                        color: AppColors.textHint),
-                                  ],
-                                ),
-                              );
-                            },
-                          ),
-                        ),
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  _buildHistoryTab(),
+                  _buildFavoritesTab(),
+                ],
+              ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildHistoryTab() {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (_history.isEmpty) {
+      return const Center(
+          child: Text('No hay búsquedas recientes',
+              style: TextStyle(color: AppColors.textSecondary)));
+    }
+    return ListView.builder(
+      padding: const EdgeInsets.all(20),
+      itemCount: _history.length,
+      itemBuilder: (context, index) {
+        final item = _history[index];
+        return Card(
+          color: AppColors.cardBackground,
+          margin: const EdgeInsets.only(bottom: 12),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+              side: const BorderSide(color: AppColors.border)),
+          child: ListTile(
+            leading:
+                const Icon(Icons.history_rounded, color: AppColors.textHint),
+            title: Text(item['name'] ?? 'Producto',
+                style: const TextStyle(
+                    color: AppColors.textPrimary, fontWeight: FontWeight.bold)),
+            subtitle: Text('\$${item['price']} COP',
+                style: const TextStyle(color: AppColors.primary)),
+            trailing: Text(item['source']?.toString().toUpperCase() ?? '',
+                style:
+                    const TextStyle(color: AppColors.textHint, fontSize: 10)),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildFavoritesTab() {
+    return Consumer<FavoritesProvider>(
+      builder: (context, favs, _) {
+        if (favs.isLoading) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (favs.favorites.isEmpty) {
+          return const Center(
+              child: Text('No tienes productos favoritos',
+                  style: TextStyle(color: AppColors.textSecondary)));
+        }
+        return ListView.builder(
+          padding: const EdgeInsets.all(20),
+          itemCount: favs.favorites.length,
+          itemBuilder: (context, index) {
+            final product = favs.favorites[index];
+            return Card(
+              color: AppColors.cardBackground,
+              margin: const EdgeInsets.only(bottom: 12),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  side: const BorderSide(color: AppColors.border)),
+              child: ListTile(
+                leading: const Icon(Icons.favorite_rounded, color: Colors.red),
+                title: Text(product.name,
+                    style: const TextStyle(
+                        color: AppColors.textPrimary,
+                        fontWeight: FontWeight.bold)),
+                subtitle: Text(
+                    '\$${product.price.toStringAsFixed(0)} ${product.currency}',
+                    style: const TextStyle(color: AppColors.primary)),
+                trailing: IconButton(
+                  icon: const Icon(Icons.delete_outline_rounded,
+                      color: AppColors.textHint),
+                  onPressed: () => favs.toggleFavorite(product),
+                ),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }

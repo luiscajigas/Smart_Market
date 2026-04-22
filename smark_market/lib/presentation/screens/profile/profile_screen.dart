@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../../data/providers/auth_provider.dart';
+import '../../../data/providers/settings_provider.dart';
 import '../welcome/welcome_screen.dart';
 import '../home/main_shell.dart';
 import '../home/supermarket_map_screen.dart';
@@ -32,9 +33,56 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
+  void _showBudgetDialog(BuildContext context) {
+    final settings = context.read<SettingsProvider>();
+    final controller =
+        TextEditingController(text: settings.monthlyBudget.toStringAsFixed(0));
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.cardBackground,
+        title: const Text('Presupuesto Mensual',
+            style: TextStyle(color: AppColors.textPrimary)),
+        content: TextField(
+          controller: controller,
+          keyboardType: TextInputType.number,
+          style: const TextStyle(color: AppColors.textPrimary),
+          decoration: const InputDecoration(
+            labelText: 'Monto (COP)',
+            labelStyle: TextStyle(color: AppColors.textHint),
+            enabledBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: AppColors.border)),
+            focusedBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: AppColors.primary)),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar',
+                style: TextStyle(color: AppColors.textHint)),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final value = double.tryParse(controller.text);
+              if (value != null) {
+                settings.setMonthlyBudget(value);
+              }
+              Navigator.pop(context);
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+            child: const Text('Guardar', style: TextStyle(color: Colors.black)),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final authProvider = context.watch<AuthProvider>();
+    final settingsProvider = context.watch<SettingsProvider>();
     final metadata = authProvider.currentUser?.userMetadata;
 
     final nombre = metadata?['full_name'] ?? 'Usuario';
@@ -94,13 +142,10 @@ class ProfileScreen extends StatelessWidget {
                       onTap: () => _navigateToTab(context, 3),
                     ),
                     _StatItem(
-                      value: '\$22K',
-                      label: 'Ahorro',
-                      onTap: () => _navigateToPlaceholder(
-                          context,
-                          'Presupuesto',
-                          'Gestiona tu gasto mensual y visualiza tus ahorros.',
-                          Icons.account_balance_wallet_outlined),
+                      value:
+                          '\$${(settingsProvider.monthlyBudget / 1000).toStringAsFixed(0)}K',
+                      label: 'Meta',
+                      onTap: () => _showBudgetDialog(context),
                     ),
                     _StatItem(
                       value: '3',
@@ -135,11 +180,7 @@ class ProfileScreen extends StatelessWidget {
                   Icons.account_balance_wallet_outlined,
                   'Presupuesto',
                   'Gestiona tu gasto mensual',
-                  () => _navigateToPlaceholder(
-                      context,
-                      'Presupuesto',
-                      'Lleva un control detallado de tus gastos mensuales y ahorros.',
-                      Icons.account_balance_wallet_outlined)
+                  () => _showBudgetDialog(context)
                 ),
                 (
                   Icons.bar_chart_rounded,

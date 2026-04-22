@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../data/providers/product_provider.dart';
+import '../../../data/providers/favorites_provider.dart';
+import '../../../data/models/product_model.dart';
 import '../../../data/models/search_result_model.dart';
 
 class CompareScreen extends StatefulWidget {
@@ -94,7 +96,7 @@ class _CompareScreenState extends State<CompareScreen> {
                       style: TextStyle(color: AppColors.textSecondary)),
                 ),
               )
-            else if (searchResponse.results.isEmpty)
+            else if (productProvider.groupedProducts.isEmpty)
               const Expanded(
                 child: Center(
                   child: Text('No se encontraron productos',
@@ -105,9 +107,9 @@ class _CompareScreenState extends State<CompareScreen> {
               Expanded(
                 child: ListView.builder(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
-                  itemCount: searchResponse.results.length,
-                  itemBuilder: (_, i) => _ProductResultCard(
-                    result: searchResponse.results[i],
+                  itemCount: productProvider.groupedProducts.length,
+                  itemBuilder: (_, i) => _ProductComparisonCard(
+                    product: productProvider.groupedProducts[i],
                   ),
                 ),
               ),
@@ -118,154 +120,244 @@ class _CompareScreenState extends State<CompareScreen> {
   }
 }
 
-class _ProductResultCard extends StatelessWidget {
-  final ProductResult result;
-  const _ProductResultCard({required this.result});
+class _ProductComparisonCard extends StatelessWidget {
+  final Product product;
+  const _ProductComparisonCard({required this.product});
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 16),
       color: AppColors.cardBackground,
       elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         side: BorderSide(color: AppColors.border.withOpacity(0.5)),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  width: 60,
+                  height: 60,
                   decoration: BoxDecoration(
-                    color: _getSourceColor(result.source).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(20),
+                    color: AppColors.primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Text(
-                    result.source.toUpperCase(),
-                    style: TextStyle(
-                      color: _getSourceColor(result.source),
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
+                  child: product.imageUrl != null
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.network(
+                            product.imageUrl!,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) =>
+                                const Icon(Icons.shopping_cart_outlined,
+                                    color: AppColors.primary, size: 24),
+                          ),
+                        )
+                      : const Icon(Icons.shopping_cart_outlined,
+                          color: AppColors.primary, size: 24),
                 ),
-                if (result.brand != null)
-                  Text(
-                    result.brand!,
-                    style: const TextStyle(
-                        color: AppColors.textSecondary, fontSize: 12),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (result.images.isNotEmpty)
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Image.network(
-                      result.images.first,
-                      width: 80,
-                      height: 80,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => Container(
-                        width: 80,
-                        height: 80,
-                        color: AppColors.border.withOpacity(0.2),
-                        child: const Icon(Icons.image_not_supported_rounded,
-                            color: AppColors.textHint),
-                      ),
-                    ),
-                  ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        result.name,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
+                        product.name,
                         style: const TextStyle(
                           color: AppColors.textPrimary,
                           fontWeight: FontWeight.bold,
-                          fontSize: 15,
+                          fontSize: 16,
                         ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Text(
-                            _formatPrice(result.price),
-                            style: const TextStyle(
-                              color: AppColors.primary,
-                              fontWeight: FontWeight.w900,
-                              fontSize: 18,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          if (result.oldPrice != null)
-                            Text(
-                              _formatPrice(result.oldPrice!),
-                              style: const TextStyle(
-                                color: AppColors.textHint,
-                                fontSize: 13,
-                                decoration: TextDecoration.lineThrough,
-                              ),
-                            ),
-                        ],
+                      Text(
+                        product.category,
+                        style: const TextStyle(
+                            color: AppColors.textHint, fontSize: 12),
                       ),
                     ],
                   ),
                 ),
+                Consumer<FavoritesProvider>(
+                  builder: (context, favorites, _) {
+                    // Buscar el resultado original de este producto para el favorito
+                    final resultsForThisProduct = context
+                        .read<ProductProvider>()
+                        .products
+                        .where((p) => p.name == product.name);
+
+                    if (resultsForThisProduct.isEmpty) return const SizedBox();
+
+                    final bestResult = resultsForThisProduct.firstWhere(
+                      (p) => p.source == product.bestSupermarket,
+                      orElse: () => resultsForThisProduct.first,
+                    );
+
+                    final isFav = favorites.isFavorite(bestResult);
+                    return IconButton(
+                      onPressed: () => favorites.toggleFavorite(bestResult),
+                      icon: Icon(
+                        isFav
+                            ? Icons.favorite_rounded
+                            : Icons.favorite_border_rounded,
+                        color: isFav ? Colors.red : AppColors.textHint,
+                      ),
+                    );
+                  },
+                ),
               ],
             ),
-            const SizedBox(height: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                if (result.url != null)
-                  IconButton(
-                    onPressed: () {
-                      // TODO: Implement URL launcher
-                    },
-                    icon: const Icon(Icons.open_in_new_rounded,
-                        color: AppColors.primary, size: 20),
-                    style: IconButton.styleFrom(
-                      backgroundColor: AppColors.primary.withOpacity(0.1),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10)),
-                    ),
+            const SizedBox(height: 20),
+            const Text(
+              'Precios por supermercado:',
+              style: TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 10),
+            ...product.prices.entries.map((entry) {
+              final isBest = entry.key == product.bestSupermarket;
+              return Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                decoration: BoxDecoration(
+                  color: isBest
+                      ? AppColors.primary.withOpacity(0.08)
+                      : AppColors.inputBackground,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: isBest
+                        ? AppColors.primary.withOpacity(0.3)
+                        : AppColors.border,
                   ),
-              ],
-            ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        _getLogo(entry.key),
+                        const SizedBox(width: 10),
+                        Text(
+                          entry.key.toUpperCase(),
+                          style: TextStyle(
+                            color: isBest
+                                ? AppColors.primary
+                                : AppColors.textPrimary,
+                            fontWeight:
+                                isBest ? FontWeight.w800 : FontWeight.w600,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        Text(
+                          _formatPrice(entry.value),
+                          style: TextStyle(
+                            color: isBest
+                                ? AppColors.primary
+                                : AppColors.textPrimary,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 15,
+                          ),
+                        ),
+                        if (isBest) ...[
+                          const SizedBox(width: 8),
+                          const Icon(Icons.check_circle_rounded,
+                              color: AppColors.primary, size: 18),
+                        ],
+                        const SizedBox(width: 12),
+                        IconButton(
+                          onPressed: () {
+                            // Buscar el link original de este supermercado
+                            final originalProduct = context
+                                .read<ProductProvider>()
+                                .products
+                                .firstWhere((p) =>
+                                    p.name == product.name &&
+                                    p.source == entry.key);
+                            if (originalProduct.url != null) {
+                              // TODO: Lanzar URL con url_launcher
+                              print('Comprando en: ${originalProduct.url}');
+                            }
+                          },
+                          icon: const Icon(Icons.shopping_bag_outlined,
+                              size: 20, color: AppColors.primary),
+                          style: IconButton.styleFrom(
+                            backgroundColor: AppColors.primary.withOpacity(0.1),
+                            padding: const EdgeInsets.all(4),
+                            minimumSize: const Size(32, 32),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+            if (product.prices.length > 1) ...[
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.green.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.savings_outlined,
+                        color: Colors.green, size: 20),
+                    const SizedBox(width: 10),
+                    Text(
+                      'Ahorras ${_formatPrice(product.savings)} comprando en ${product.bestSupermarket}',
+                      style: const TextStyle(
+                        color: Colors.green,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ],
         ),
       ),
     );
   }
 
-  Color _getSourceColor(String source) {
+  Widget _getLogo(String source) {
+    Color color;
     switch (source.toLowerCase()) {
       case 'alkosto':
-        return const Color(0xFF0033A0); // Azul Alkosto
+        color = const Color(0xFF0033A0);
+        break;
       case 'exito':
       case 'éxito':
-        return const Color(0xFFFFD100); // Amarillo Éxito
+        color = const Color(0xFFFFD100);
+        break;
       case 'jumbo':
-        return const Color(0xFF00A34D); // Verde Jumbo
+        color = const Color(0xFF00A34D);
+        break;
       default:
-        return AppColors.primary;
+        color = AppColors.primary;
     }
+    return Container(
+      width: 8,
+      height: 8,
+      decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+    );
   }
 
   String _formatPrice(double price) {

@@ -8,6 +8,8 @@ import 'core/theme/app_theme.dart';
 import 'data/providers/auth_provider.dart';
 import 'data/providers/product_provider.dart';
 import 'data/providers/settings_provider.dart';
+import 'data/providers/favorites_provider.dart';
+import 'data/providers/location_provider.dart';
 import 'presentation/screens/welcome/welcome_screen.dart';
 import 'presentation/screens/home/main_shell.dart';
 
@@ -37,6 +39,8 @@ void main() async {
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => ProductProvider()),
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
+        ChangeNotifierProvider(create: (_) => FavoritesProvider()),
+        ChangeNotifierProvider(create: (_) => LocationProvider()),
       ],
       child: const SmartMarketApp(),
     ),
