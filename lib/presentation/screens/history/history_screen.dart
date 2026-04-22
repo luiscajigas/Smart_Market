@@ -36,9 +36,12 @@ class _HistoryScreenState extends State<HistoryScreen>
 
   @override
   Widget build(BuildContext context) {
-    context.watch<SettingsProvider>();
+    final settings = context.watch<SettingsProvider>();
+    final primaryColor =
+        settings.isDarkMode ? AppColors.primaryGreen : AppColors.primaryBlue;
+
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
@@ -48,20 +51,22 @@ class _HistoryScreenState extends State<HistoryScreen>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(AppMessages.historyTitle,
-                      style: const TextStyle(
-                          color: AppColors.textPrimary,
+                      style: TextStyle(
+                          color: Theme.of(context).textTheme.titleLarge?.color,
                           fontSize: 24,
                           fontWeight: FontWeight.w800,
                           letterSpacing: -0.5)),
                   Text(AppMessages.historySubtitle,
-                      style: const TextStyle(
-                          color: AppColors.textSecondary, fontSize: 13)),
+                      style: TextStyle(
+                          color: Theme.of(context).textTheme.bodySmall?.color,
+                          fontSize: 13)),
                   const SizedBox(height: 16),
                   TabBar(
                     controller: _tabController,
-                    indicatorColor: AppColors.primary,
-                    labelColor: AppColors.primary,
-                    unselectedLabelColor: AppColors.textSecondary,
+                    indicatorColor: primaryColor,
+                    labelColor: primaryColor,
+                    unselectedLabelColor:
+                        Theme.of(context).textTheme.bodySmall?.color,
                     indicatorSize: TabBarIndicatorSize.label,
                     tabs: [
                       Tab(text: AppMessages.historyTab),
@@ -107,54 +112,63 @@ class _HistoryScreenState extends State<HistoryScreen>
             itemBuilder: (context, index) {
               final item = provider.history[index];
               final isPurchase = item['source'] == 'purchase';
+              final settings = context.watch<SettingsProvider>();
+              final primaryColor = settings.isDarkMode
+                  ? AppColors.primaryGreen
+                  : AppColors.primaryBlue;
 
               return Card(
-                color: AppColors.cardBackground,
+                color: Theme.of(context).colorScheme.surface,
                 margin: const EdgeInsets.only(bottom: 12),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
                     side: BorderSide(
                       color: isPurchase
-                          ? AppColors.primary.withAlpha(77)
-                          : AppColors.border,
+                          ? primaryColor.withAlpha(77)
+                          : Theme.of(context).dividerColor.withOpacity(0.1),
                       width: isPurchase ? 1.5 : 1,
                     )),
                 child: ListTile(
                   leading: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color:
-                          (isPurchase ? AppColors.primary : AppColors.textHint)
-                              .withAlpha(26),
+                      color: (isPurchase
+                              ? primaryColor
+                              : Theme.of(context).textTheme.bodySmall?.color ??
+                                  AppColors.textHint)
+                          .withAlpha(26),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
                       isPurchase
                           ? Icons.shopping_cart_checkout_rounded
                           : Icons.history_rounded,
-                      color:
-                          isPurchase ? AppColors.primary : AppColors.textHint,
+                      color: isPurchase
+                          ? primaryColor
+                          : Theme.of(context).textTheme.bodySmall?.color,
                       size: 20,
                     ),
                   ),
                   title: Text(item['name'] ?? AppMessages.productLabel,
-                      style: const TextStyle(
-                          color: AppColors.textPrimary,
+                      style: TextStyle(
+                          color: Theme.of(context).textTheme.bodyLarge?.color,
                           fontWeight: FontWeight.bold)),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       if (item['price'] != null && item['price'] > 0)
                         Text('\$${item['price']} COP',
-                            style: const TextStyle(
-                                color: AppColors.primary,
+                            style: TextStyle(
+                                color: primaryColor,
                                 fontWeight: FontWeight.w600)),
                       Text(
                           isPurchase
                               ? AppMessages.purchaseAccess
                               : AppMessages.searchPerformed,
-                          style: const TextStyle(
-                              color: AppColors.textSecondary, fontSize: 11)),
+                          style: TextStyle(
+                              color:
+                                  Theme.of(context).textTheme.bodySmall?.color,
+                              fontSize: 11)),
                     ],
                   ),
                   trailing: isPurchase
@@ -162,18 +176,20 @@ class _HistoryScreenState extends State<HistoryScreen>
                           padding: const EdgeInsets.symmetric(
                               horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
-                            color: AppColors.primary.withAlpha(26),
+                            color: primaryColor.withAlpha(26),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(AppMessages.purchaseLabel,
-                              style: const TextStyle(
-                                  color: AppColors.primary,
+                              style: TextStyle(
+                                  color: primaryColor,
                                   fontSize: 10,
                                   fontWeight: FontWeight.bold)),
                         )
                       : Text(item['category'] ?? '',
-                          style: const TextStyle(
-                              color: AppColors.textHint, fontSize: 10)),
+                          style: TextStyle(
+                              color:
+                                  Theme.of(context).textTheme.bodySmall?.color,
+                              fontSize: 10)),
                 ),
               );
             },
@@ -192,31 +208,38 @@ class _HistoryScreenState extends State<HistoryScreen>
         if (favs.favorites.isEmpty) {
           return Center(
               child: Text(AppMessages.noFavorites,
-                  style: const TextStyle(color: AppColors.textSecondary)));
+                  style: TextStyle(
+                      color: Theme.of(context).textTheme.bodySmall?.color)));
         }
+        final settings = context.watch<SettingsProvider>();
+        final primaryColor = settings.isDarkMode
+            ? AppColors.primaryGreen
+            : AppColors.primaryBlue;
+
         return ListView.builder(
           padding: const EdgeInsets.all(20),
           itemCount: favs.favorites.length,
           itemBuilder: (context, index) {
             final product = favs.favorites[index];
             return Card(
-              color: AppColors.cardBackground,
+              color: Theme.of(context).colorScheme.surface,
               margin: const EdgeInsets.only(bottom: 12),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),
-                  side: const BorderSide(color: AppColors.border)),
+                  side: BorderSide(
+                      color: Theme.of(context).dividerColor.withOpacity(0.1))),
               child: ListTile(
                 leading: const Icon(Icons.favorite_rounded, color: Colors.red),
                 title: Text(product.name,
-                    style: const TextStyle(
-                        color: AppColors.textPrimary,
+                    style: TextStyle(
+                        color: Theme.of(context).textTheme.bodyLarge?.color,
                         fontWeight: FontWeight.bold)),
                 subtitle: Text(
                     '\$${product.price.toStringAsFixed(0)} ${product.currency}',
-                    style: const TextStyle(color: AppColors.primary)),
+                    style: TextStyle(color: primaryColor)),
                 trailing: IconButton(
-                  icon: const Icon(Icons.delete_outline_rounded,
-                      color: AppColors.textHint),
+                  icon: Icon(Icons.delete_outline_rounded,
+                      color: Theme.of(context).textTheme.bodySmall?.color),
                   onPressed: () => favs.toggleFavorite(product),
                 ),
               ),

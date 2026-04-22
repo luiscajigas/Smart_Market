@@ -198,7 +198,10 @@ class AppMessages {
       _t('Manage your monthly spending', 'Gestiona tu gasto mensual');
   static String get languageLabel => _t('Language', 'Idioma');
   static String get languageDesc =>
-      _t('Change app language', 'Cambiar idioma de la app');
+      _t('App language: es/en', 'Idioma de la app: es/en');
+  static String get darkModeLabel => _t('Dark Mode', 'Modo Oscuro');
+  static String get darkModeDesc =>
+      _t('Switch between light and dark themes', 'Cambiar entre modo claro y oscuro');
   static String get selectLanguageTitle =>
       _t('Select Language', 'Seleccionar Idioma');
   static String get englishLabel => _t('English', 'Inglés');

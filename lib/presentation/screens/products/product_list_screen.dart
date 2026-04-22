@@ -39,13 +39,13 @@ class _ProductListScreenState extends State<ProductListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(AppMessages.comparedProductsTitle,
-            style: const TextStyle(color: AppColors.textPrimary)),
-        backgroundColor: AppColors.background,
+            style: TextStyle(color: Theme.of(context).textTheme.titleLarge?.color)),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         elevation: 0,
-        iconTheme: const IconThemeData(color: AppColors.textPrimary),
+        iconTheme: IconThemeData(color: Theme.of(context).iconTheme.color),
       ),
       body: _isLoading
           ? const Center(
@@ -53,7 +53,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
           : _products.isEmpty
               ? Center(
                   child: Text(AppMessages.noProductsAvailable,
-                      style: const TextStyle(color: AppColors.textSecondary)))
+                      style: TextStyle(color: Theme.of(context).textTheme.bodySmall?.color)))
               : Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: GridView.builder(
@@ -68,9 +68,11 @@ class _ProductListScreenState extends State<ProductListScreen> {
                     itemBuilder: (context, index) {
                       final product = _products[index];
                       return Card(
-                        color: AppColors.cardBackground,
+                        color: Theme.of(context).colorScheme.surface,
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16)),
+                            borderRadius: BorderRadius.circular(16),
+                            side: BorderSide(color: Theme.of(context).dividerColor.withOpacity(0.1))),
+                        elevation: 0,
                         child: Padding(
                           padding: const EdgeInsets.all(12.0),
                           child: Column(
@@ -103,8 +105,8 @@ class _ProductListScreenState extends State<ProductListScreen> {
                               Text(product.name,
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                      color: AppColors.textPrimary,
+                                  style: TextStyle(
+                                      color: Theme.of(context).textTheme.titleSmall?.color,
                                       fontWeight: FontWeight.bold,
                                       fontSize: 13)),
                               const SizedBox(height: 4),
@@ -116,8 +118,8 @@ class _ProductListScreenState extends State<ProductListScreen> {
                                       fontSize: 15)),
                               const SizedBox(height: 2),
                               Text(product.source.toUpperCase(),
-                                  style: const TextStyle(
-                                      color: AppColors.textSecondary,
+                                  style: TextStyle(
+                                      color: Theme.of(context).textTheme.bodySmall?.color,
                                       fontSize: 11,
                                       fontWeight: FontWeight.bold)),
                             ],

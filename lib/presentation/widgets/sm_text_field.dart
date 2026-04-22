@@ -34,8 +34,8 @@ class SmTextField extends StatelessWidget {
       children: [
         Text(
           label,
-          style: const TextStyle(
-            color: AppColors.textSecondary,
+          style: TextStyle(
+            color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.7),
             fontSize: 13,
             fontWeight: FontWeight.w500,
           ),
@@ -48,7 +48,8 @@ class SmTextField extends StatelessWidget {
           textInputAction: textInputAction,
           onFieldSubmitted: onFieldSubmitted,
           validator: validator,
-          style: const TextStyle(color: AppColors.textPrimary, fontSize: 15),
+          style: TextStyle(
+              color: Theme.of(context).textTheme.bodyLarge?.color, fontSize: 15),
           decoration: InputDecoration(
             hintText: hint,
             prefixIcon: prefixIcon,

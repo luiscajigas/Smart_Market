@@ -42,18 +42,19 @@ class ProfileScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.cardBackground,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         title: Text(AppMessages.monthlyBudgetTitle,
-            style: const TextStyle(color: AppColors.textPrimary)),
+            style: TextStyle(
+                color: Theme.of(context).textTheme.titleLarge?.color)),
         content: TextField(
           controller: controller,
           keyboardType: TextInputType.number,
-          style: const TextStyle(color: AppColors.textPrimary),
+          style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
           decoration: InputDecoration(
             labelText: AppMessages.amountLabel,
             labelStyle: const TextStyle(color: AppColors.textHint),
-            enabledBorder: const UnderlineInputBorder(
-                borderSide: BorderSide(color: AppColors.border)),
+            enabledBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: Theme.of(context).dividerColor)),
             focusedBorder: const UnderlineInputBorder(
                 borderSide: BorderSide(color: AppColors.primary)),
           ),
@@ -74,7 +75,7 @@ class ProfileScreen extends StatelessWidget {
             },
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
             child: Text(AppMessages.saveAction,
-                style: const TextStyle(color: Colors.black)),
+                style: const TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -86,27 +87,31 @@ class ProfileScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.cardBackground,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         title: Text(AppMessages.selectLanguageTitle,
-            style: const TextStyle(color: AppColors.textPrimary)),
+            style: TextStyle(
+                color: Theme.of(context).textTheme.titleLarge?.color)),
         content: SizedBox(
           width: double.maxFinite,
           child: DropdownButton<String>(
             value: settings.language,
             isExpanded: true,
-            dropdownColor: AppColors.cardBackground,
-            iconEnabledColor: AppColors.textPrimary,
-            underline: Container(height: 1, color: AppColors.border),
+            dropdownColor: Theme.of(context).colorScheme.surface,
+            iconEnabledColor: Theme.of(context).textTheme.bodyLarge?.color,
+            underline:
+                Container(height: 1, color: Theme.of(context).dividerColor),
             items: [
               DropdownMenuItem(
                 value: 'es',
                 child: Text(AppMessages.spanishLabel,
-                    style: const TextStyle(color: AppColors.textPrimary)),
+                    style: TextStyle(
+                        color: Theme.of(context).textTheme.bodyLarge?.color)),
               ),
               DropdownMenuItem(
                 value: 'en',
                 child: Text(AppMessages.englishLabel,
-                    style: const TextStyle(color: AppColors.textPrimary)),
+                    style: TextStyle(
+                        color: Theme.of(context).textTheme.bodyLarge?.color)),
               ),
             ],
             onChanged: (value) {
@@ -139,8 +144,8 @@ class ProfileScreen extends StatelessWidget {
             children: [
               const SizedBox(height: 24),
               Text(AppMessages.profileTitle,
-                  style: const TextStyle(
-                      color: AppColors.textPrimary,
+                  style: TextStyle(
+                      color: Theme.of(context).textTheme.headlineMedium?.color,
                       fontSize: 24,
                       fontWeight: FontWeight.w800)),
               const SizedBox(height: 24),
@@ -160,14 +165,14 @@ class ProfileScreen extends StatelessWidget {
                 child: Center(
                     child: Text(initial,
                         style: const TextStyle(
-                            color: Colors.black,
+                            color: Colors.white,
                             fontSize: 32,
                             fontWeight: FontWeight.w800))),
               ),
               const SizedBox(height: 14),
               Text(name,
-                  style: const TextStyle(
-                      color: AppColors.textPrimary,
+                  style: TextStyle(
+                      color: Theme.of(context).textTheme.titleLarge?.color,
                       fontSize: 22,
                       fontWeight: FontWeight.w700)),
               const SizedBox(height: 4),
@@ -206,10 +211,21 @@ class ProfileScreen extends StatelessWidget {
               const SizedBox(height: 24),
               ...[
                 (
+                  settingsProvider.isDarkMode
+                      ? Icons.dark_mode_outlined
+                      : Icons.light_mode_outlined,
+                  AppMessages.darkModeLabel,
+                  AppMessages.darkModeDesc,
+                  () => settingsProvider
+                      .toggleDarkMode(!settingsProvider.isDarkMode),
+                  true // isToggle
+                ),
+                (
                   Icons.notifications_outlined,
                   AppMessages.notificationsLabel,
                   AppMessages.notificationsDesc,
-                  () {}
+                  () {},
+                  false
                 ),
                 (
                   Icons.location_on_outlined,
@@ -218,19 +234,22 @@ class ProfileScreen extends StatelessWidget {
                   () => Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (_) => const SupermarketMapScreen()))
+                          builder: (_) => const SupermarketMapScreen())),
+                  false
                 ),
                 (
                   Icons.account_balance_wallet_outlined,
                   AppMessages.budgetLabel,
                   AppMessages.budgetDesc,
-                  () => _showBudgetDialog(context)
+                  () => _showBudgetDialog(context),
+                  false
                 ),
                 (
                   Icons.language_rounded,
                   AppMessages.languageLabel,
                   AppMessages.languageDesc,
-                  () => _showLanguageDialog(context)
+                  () => _showLanguageDialog(context),
+                  false
                 ),
                 (
                   Icons.bar_chart_rounded,
@@ -240,13 +259,15 @@ class ProfileScreen extends StatelessWidget {
                       context,
                       AppMessages.statisticsLabel,
                       'Visualize your consumption habits with interactive charts.',
-                      Icons.bar_chart_rounded)
+                      Icons.bar_chart_rounded),
+                  false
                 ),
                 (
                   Icons.shield_outlined,
                   AppMessages.privacyLabel,
                   AppMessages.privacyDesc,
-                  () {}
+                  () {},
+                  false
                 ),
                 (
                   Icons.help_outline_rounded,
@@ -256,40 +277,53 @@ class ProfileScreen extends StatelessWidget {
                       context,
                       AppMessages.helpLabel,
                       'Get answers to your questions and contact support.',
-                      Icons.help_outline_rounded)
+                      Icons.help_outline_rounded),
+                  false
                 ),
-              ].map((item) => Container(
-                    margin: const EdgeInsets.only(bottom: 8),
-                    child: ListTile(
-                      onTap: item.$4,
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 4),
-                      tileColor: AppColors.cardBackground,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                          side: const BorderSide(color: AppColors.border)),
-                      leading: Container(
-                        width: 38,
-                        height: 38,
-                        decoration: BoxDecoration(
-                          color: AppColors.primary.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child:
-                            Icon(item.$1, color: AppColors.primary, size: 18),
+              ].map((item) {
+                final isToggle = item.$5;
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  child: ListTile(
+                    onTap: item.$4,
+                    contentPadding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    tileColor: Theme.of(context).colorScheme.surface,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        side: BorderSide(
+                            color: Theme.of(context)
+                                .dividerColor
+                                .withOpacity(0.1))),
+                    leading: Container(
+                      width: 38,
+                      height: 38,
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(10),
                       ),
-                      title: Text(item.$2,
-                          style: const TextStyle(
-                              color: AppColors.textPrimary,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600)),
-                      subtitle: Text(item.$3,
-                          style: const TextStyle(
-                              color: AppColors.textHint, fontSize: 11)),
-                      trailing: const Icon(Icons.arrow_forward_ios_rounded,
-                          color: AppColors.textHint, size: 14),
+                      child: Icon(item.$1, color: AppColors.primary, size: 18),
                     ),
-                  )),
+                    title: Text(item.$2,
+                        style: TextStyle(
+                            color: Theme.of(context).textTheme.bodyLarge?.color,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600)),
+                    subtitle: Text(item.$3,
+                        style: const TextStyle(
+                            color: AppColors.textHint, fontSize: 11)),
+                    trailing: isToggle
+                        ? Switch(
+                            value: settingsProvider.isDarkMode,
+                            onChanged: (value) =>
+                                settingsProvider.toggleDarkMode(value),
+                            activeColor: AppColors.primary,
+                          )
+                        : const Icon(Icons.arrow_forward_ios_rounded,
+                            color: AppColors.textHint, size: 14),
+                  ),
+                );
+              }),
               const SizedBox(height: 8),
               SizedBox(
                 width: double.infinity,

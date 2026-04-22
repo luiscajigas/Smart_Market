@@ -68,7 +68,9 @@ class _AiScreenState extends State<AiScreen> {
                     width: 40,
                     height: 40,
                     decoration: BoxDecoration(
-                      gradient: AppColors.primaryGradient,
+                      gradient: settingsProvider.isDarkMode
+                          ? AppColors.primaryGradientGreen
+                          : AppColors.primaryGradientBlue,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Center(
@@ -79,14 +81,17 @@ class _AiScreenState extends State<AiScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(AppMessages.aiTitle,
-                          style: const TextStyle(
-                              color: AppColors.textPrimary,
+                          style: TextStyle(
+                              color:
+                                  Theme.of(context).textTheme.titleLarge?.color,
                               fontSize: 22,
                               fontWeight: FontWeight.w800,
                               letterSpacing: -0.5)),
                       Text(AppMessages.aiSubtitle,
-                          style: const TextStyle(
-                              color: AppColors.textSecondary, fontSize: 13)),
+                          style: TextStyle(
+                              color:
+                                  Theme.of(context).textTheme.bodySmall?.color,
+                              fontSize: 13)),
                     ],
                   ),
                 ],
@@ -109,14 +114,15 @@ class _AiScreenState extends State<AiScreen> {
               const SizedBox(height: 24),
 
               Text(AppMessages.activeRecommendations,
-                  style: const TextStyle(
-                      color: AppColors.textPrimary,
+                  style: TextStyle(
+                      color: Theme.of(context).textTheme.titleMedium?.color,
                       fontSize: 16,
                       fontWeight: FontWeight.w700)),
               const SizedBox(height: 4),
               Text(AppMessages.basedOnPatterns,
-                  style: const TextStyle(
-                      color: AppColors.textSecondary, fontSize: 13)),
+                  style: TextStyle(
+                      color: Theme.of(context).textTheme.bodySmall?.color,
+                      fontSize: 13)),
               const SizedBox(height: 14),
 
               if (recommendations.isEmpty)
@@ -124,7 +130,9 @@ class _AiScreenState extends State<AiScreen> {
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 20),
                     child: Text(AppMessages.notEnoughRecommendations,
-                        style: const TextStyle(color: AppColors.textSecondary)),
+                        style: TextStyle(
+                            color:
+                                Theme.of(context).textTheme.bodySmall?.color)),
                   ),
                 )
               else
@@ -136,9 +144,10 @@ class _AiScreenState extends State<AiScreen> {
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: AppColors.cardBackground,
+                  color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppColors.border),
+                  border: Border.all(
+                      color: Theme.of(context).dividerColor.withOpacity(0.1)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -148,8 +157,11 @@ class _AiScreenState extends State<AiScreen> {
                         const Text('📊', style: TextStyle(fontSize: 20)),
                         const SizedBox(width: 8),
                         Text(AppMessages.consumptionAnalysis,
-                            style: const TextStyle(
-                                color: AppColors.textPrimary,
+                            style: TextStyle(
+                                color: Theme.of(context)
+                                    .textTheme
+                                    .titleSmall
+                                    ?.color,
                                 fontSize: 15,
                                 fontWeight: FontWeight.w700)),
                       ],
@@ -179,9 +191,11 @@ class _AiScreenState extends State<AiScreen> {
                                             child: Text(p.name,
                                                 maxLines: 1,
                                                 overflow: TextOverflow.ellipsis,
-                                                style: const TextStyle(
-                                                    color:
-                                                        AppColors.textPrimary,
+                                                style: TextStyle(
+                                                    color: Theme.of(context)
+                                                        .textTheme
+                                                        .bodyLarge
+                                                        ?.color,
                                                     fontSize: 13,
                                                     fontWeight:
                                                         FontWeight.w500)),
@@ -196,13 +210,17 @@ class _AiScreenState extends State<AiScreen> {
                                       const SizedBox(height: 4),
                                       ClipRRect(
                                         borderRadius: BorderRadius.circular(3),
-                                        child: const LinearProgressIndicator(
+                                        child: LinearProgressIndicator(
                                           value: 0.8,
-                                          backgroundColor: AppColors.border,
+                                          backgroundColor: Theme.of(context)
+                                              .dividerColor
+                                              .withOpacity(0.1),
                                           valueColor:
                                               AlwaysStoppedAnimation<Color>(
-                                                  AppColors.primary),
-                                          minHeight: 5,
+                                                  settingsProvider.isDarkMode
+                                                      ? AppColors.primaryGreen
+                                                      : AppColors.primaryBlue),
+                                          minHeight: 6,
                                         ),
                                       ),
                                     ],
@@ -220,7 +238,7 @@ class _AiScreenState extends State<AiScreen> {
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: AppColors.cardBackground,
+                  color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
                       color: const Color(0xFF7C4DFF).withOpacity(0.3)),
@@ -229,28 +247,36 @@ class _AiScreenState extends State<AiScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text('📍 ${AppMessages.nearbySupermarkets}',
-                        style: const TextStyle(
-                            color: AppColors.textPrimary,
+                        style: TextStyle(
+                            color:
+                                Theme.of(context).textTheme.titleSmall?.color,
                             fontSize: 15,
                             fontWeight: FontWeight.w700)),
                     const SizedBox(height: 12),
                     if (locationProvider.isLoading)
-                      const Center(
+                      Center(
                           child: CircularProgressIndicator(
-                              color: AppColors.primary))
+                              color: settingsProvider.isDarkMode
+                                  ? AppColors.primaryGreen
+                                  : AppColors.primaryBlue))
                     else if (locationProvider.error != null)
                       Text(locationProvider.error!,
                           style:
                               const TextStyle(color: Colors.red, fontSize: 12))
                     else if (nearbySupermarkets.isEmpty)
                       Text(AppMessages.noResults,
-                          style: const TextStyle(
-                              color: AppColors.textHint, fontSize: 12))
+                          style: TextStyle(
+                              color:
+                                  Theme.of(context).textTheme.bodySmall?.color,
+                              fontSize: 12))
                     else
                       ...nearbySupermarkets.take(3).map((s) {
                         final shop = s['supermarket'] as SupermarketLocation;
                         final distance = s['distance'] as double;
                         final isNearest = nearbySupermarkets.indexOf(s) == 0;
+                        final primaryColor = settingsProvider.isDarkMode
+                            ? AppColors.primaryGreen
+                            : AppColors.primaryBlue;
 
                         return Container(
                           margin: const EdgeInsets.only(bottom: 8),
@@ -258,13 +284,17 @@ class _AiScreenState extends State<AiScreen> {
                               horizontal: 14, vertical: 10),
                           decoration: BoxDecoration(
                             color: isNearest
-                                ? AppColors.primary.withOpacity(0.1)
-                                : AppColors.inputBackground,
+                                ? primaryColor.withOpacity(0.1)
+                                : Theme.of(context)
+                                    .inputDecorationTheme
+                                    .fillColor,
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
                                 color: isNearest
-                                    ? AppColors.primary.withOpacity(0.4)
-                                    : AppColors.border),
+                                    ? primaryColor.withOpacity(0.4)
+                                    : Theme.of(context)
+                                        .dividerColor
+                                        .withOpacity(0.1)),
                           ),
                           child: Row(
                             children: [
@@ -275,36 +305,58 @@ class _AiScreenState extends State<AiScreen> {
                                   Text(shop.name,
                                       style: TextStyle(
                                           color: isNearest
-                                              ? AppColors.primary
-                                              : AppColors.textPrimary,
+                                              ? primaryColor
+                                              : Theme.of(context)
+                                                  .textTheme
+                                                  .bodyLarge
+                                                  ?.color,
                                           fontWeight: FontWeight.w600,
                                           fontSize: 13)),
                                   Text(shop.address,
-                                      style: const TextStyle(
-                                          color: AppColors.textHint,
+                                      style: TextStyle(
+                                          color: Theme.of(context)
+                                              .textTheme
+                                              .bodySmall
+                                              ?.color,
                                           fontSize: 10)),
                                 ],
                               )),
                               Text('${distance.toStringAsFixed(1)} km',
-                                  style: const TextStyle(
-                                      color: AppColors.textHint, fontSize: 12)),
+                                  style: TextStyle(
+                                      color: Theme.of(context)
+                                          .textTheme
+                                          .bodySmall
+                                          ?.color,
+                                      fontSize: 12)),
                               if (isNearest) ...[
                                 const SizedBox(width: 8),
-                                const Icon(Icons.check_circle,
-                                    color: AppColors.primary, size: 16),
+                                Icon(Icons.check_circle,
+                                    color: primaryColor, size: 16),
                               ],
                             ],
                           ),
                         );
                       }),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 12),
                     if (nearbySupermarkets.isNotEmpty)
-                      Text(
-                          '${AppMessages.nearestSupermarketRecommendation}${(nearbySupermarkets.first['supermarket'] as SupermarketLocation).name}${AppMessages.nearestSupermarketSuffix}',
-                          style: const TextStyle(
-                              color: AppColors.textSecondary,
-                              fontSize: 12,
-                              height: 1.4)),
+                      Row(
+                        children: [
+                          const Text('⚡', style: TextStyle(fontSize: 14)),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              '${AppMessages.nearestSupermarketRecommendation}${(nearbySupermarkets.first['supermarket'] as SupermarketLocation).name}${AppMessages.nearestSupermarketSuffix}',
+                              style: TextStyle(
+                                  color: Theme.of(context)
+                                      .textTheme
+                                      .bodySmall
+                                      ?.color,
+                                  fontSize: 11,
+                                  fontStyle: FontStyle.italic),
+                            ),
+                          ),
+                        ],
+                      ),
                   ],
                 ),
               ),
@@ -328,9 +380,10 @@ class _StatChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppColors.cardBackground,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppColors.border),
+          border: Border.all(
+              color: Theme.of(context).dividerColor.withOpacity(0.1)),
         ),
         child: Row(
           children: [
@@ -344,13 +397,14 @@ class _StatChip extends StatelessWidget {
                   Text(label,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                          color: AppColors.textHint, fontSize: 11)),
+                      style: TextStyle(
+                          color: Theme.of(context).textTheme.bodySmall?.color,
+                          fontSize: 11)),
                   Text(value,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                          color: AppColors.textPrimary,
+                      style: TextStyle(
+                          color: Theme.of(context).textTheme.titleMedium?.color,
                           fontSize: 15,
                           fontWeight: FontWeight.w700)),
                 ],

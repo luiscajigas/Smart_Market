@@ -10,7 +10,8 @@ class SavingsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    context.watch<SettingsProvider>();
+    final settingsProvider = context.watch<SettingsProvider>();
+    final isDark = settingsProvider.isDarkMode;
     final pct = (MockData.monthlySpent / MockData.monthlyBudget * 100).round();
 
     return GestureDetector(
@@ -18,11 +19,14 @@ class SavingsCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          gradient: AppColors.primaryGradient,
+          gradient: isDark
+              ? AppColors.primaryGradientGreen
+              : AppColors.primaryGradientBlue,
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: AppColors.primary.withOpacity(0.3),
+              color: (isDark ? AppColors.primaryGreen : AppColors.primaryBlue)
+                  .withOpacity(0.3),
               blurRadius: 20,
               offset: const Offset(0, 8),
             )
@@ -95,13 +99,14 @@ class SavingsCard extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.cardBackground,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         title: Text(AppMessages.editBudgetTitle,
-            style: const TextStyle(color: AppColors.textPrimary)),
+            style: TextStyle(
+                color: Theme.of(context).textTheme.titleLarge?.color)),
         content: TextField(
           controller: controller,
           keyboardType: TextInputType.number,
-          style: const TextStyle(color: AppColors.textPrimary),
+          style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
           decoration: InputDecoration(
             labelText: AppMessages.monthlyBudgetTitle,
             labelStyle: const TextStyle(color: AppColors.textHint),
@@ -129,7 +134,7 @@ class SavingsCard extends StatelessWidget {
             },
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
             child: Text(AppMessages.saveAction,
-                style: const TextStyle(color: Colors.black)),
+                style: const TextStyle(color: Colors.white)),
           ),
         ],
       ),

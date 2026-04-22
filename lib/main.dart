@@ -63,7 +63,7 @@ class SmartMarketApp extends StatelessWidget {
     return MaterialApp(
       title: 'Smart Market',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.darkTheme,
+      theme: settingsProvider.isDarkMode ? AppTheme.darkTheme : AppTheme.lightTheme,
       home: isLoggedIn ? const MainShell() : const WelcomeScreen(),
     );
   }

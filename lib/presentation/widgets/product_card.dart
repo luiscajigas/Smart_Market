@@ -17,9 +17,9 @@ class ProductCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.cardBackground,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: Theme.of(context).dividerColor.withOpacity(0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -49,8 +49,8 @@ class ProductCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(product.name,
-              style: const TextStyle(
-                  color: AppColors.textPrimary,
+              style: TextStyle(
+                  color: Theme.of(context).textTheme.titleSmall?.color,
                   fontSize: 12,
                   fontWeight: FontWeight.w600),
               maxLines: 2,
@@ -86,8 +86,8 @@ class ProductCard extends StatelessWidget {
                       product.bestSupermarket.isNotEmpty
                           ? product.bestSupermarket
                           : '—',
-                      style: const TextStyle(
-                          color: AppColors.textSecondary, fontSize: 9)),
+                      style: TextStyle(
+                          color: Theme.of(context).textTheme.bodySmall?.color, fontSize: 9)),
                   const SizedBox(height: 4),
                   SizedBox(
                     height: 28,

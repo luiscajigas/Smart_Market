@@ -44,6 +44,7 @@ class _CompareScreenState extends State<CompareScreen> {
     final searchResponse = productProvider.lastSearch;
 
     return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -54,8 +55,8 @@ class _CompareScreenState extends State<CompareScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(AppMessages.compareTitle,
-                      style: const TextStyle(
-                          color: AppColors.textPrimary,
+                      style: TextStyle(
+                          color: Theme.of(context).textTheme.titleLarge?.color,
                           fontSize: 24,
                           fontWeight: FontWeight.w800,
                           letterSpacing: -0.5)),
@@ -69,17 +70,28 @@ class _CompareScreenState extends State<CompareScreen> {
                   TextField(
                     controller: _searchController,
                     onSubmitted: _performSearch,
-                    style: const TextStyle(color: AppColors.textPrimary),
+                    style: TextStyle(
+                        color: Theme.of(context).textTheme.bodyLarge?.color),
                     decoration: InputDecoration(
                       hintText: AppMessages.searchProductHint,
                       hintStyle: const TextStyle(color: AppColors.textHint),
                       prefixIcon: const Icon(Icons.search_rounded,
                           color: AppColors.primary),
                       filled: true,
-                      fillColor: AppColors.cardBackground,
+                      fillColor: Theme.of(context).colorScheme.surface,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none,
+                        borderSide: BorderSide(
+                            color: Theme.of(context)
+                                .dividerColor
+                                .withOpacity(0.1)),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                            color: Theme.of(context)
+                                .dividerColor
+                                .withOpacity(0.1)),
                       ),
                     ),
                   ),
@@ -131,11 +143,12 @@ class _ProductComparisonCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
-      color: AppColors.cardBackground,
+      color: Theme.of(context).colorScheme.surface,
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
-        side: BorderSide(color: AppColors.border.withOpacity(0.5)),
+        side:
+            BorderSide(color: Theme.of(context).dividerColor.withOpacity(0.1)),
       ),
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -172,8 +185,8 @@ class _ProductComparisonCard extends StatelessWidget {
                     children: [
                       Text(
                         product.name,
-                        style: const TextStyle(
-                          color: AppColors.textPrimary,
+                        style: TextStyle(
+                          color: Theme.of(context).textTheme.titleMedium?.color,
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
                         ),
@@ -228,19 +241,24 @@ class _ProductComparisonCard extends StatelessWidget {
             const SizedBox(height: 10),
             ...product.prices.entries.map((entry) {
               final isBest = entry.key == product.bestSupermarket;
+              final settings = context.watch<SettingsProvider>();
+              final primaryColor = settings.isDarkMode
+                  ? AppColors.primaryGreen
+                  : AppColors.primaryBlue;
+
               return Container(
                 margin: const EdgeInsets.only(bottom: 8),
                 padding:
                     const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                 decoration: BoxDecoration(
                   color: isBest
-                      ? AppColors.primary.withOpacity(0.08)
-                      : AppColors.inputBackground,
+                      ? primaryColor.withOpacity(0.08)
+                      : Theme.of(context).inputDecorationTheme.fillColor,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: isBest
-                        ? AppColors.primary.withOpacity(0.3)
-                        : AppColors.border,
+                        ? primaryColor.withOpacity(0.3)
+                        : Theme.of(context).dividerColor.withOpacity(0.1),
                   ),
                 ),
                 child: Row(
@@ -254,8 +272,8 @@ class _ProductComparisonCard extends StatelessWidget {
                           entry.key.toUpperCase(),
                           style: TextStyle(
                             color: isBest
-                                ? AppColors.primary
-                                : AppColors.textPrimary,
+                                ? primaryColor
+                                : Theme.of(context).textTheme.bodyLarge?.color,
                             fontWeight:
                                 isBest ? FontWeight.w800 : FontWeight.w600,
                             fontSize: 13,
@@ -269,16 +287,16 @@ class _ProductComparisonCard extends StatelessWidget {
                           _formatPrice(entry.value),
                           style: TextStyle(
                             color: isBest
-                                ? AppColors.primary
-                                : AppColors.textPrimary,
+                                ? primaryColor
+                                : Theme.of(context).textTheme.bodyLarge?.color,
                             fontWeight: FontWeight.w900,
                             fontSize: 15,
                           ),
                         ),
                         if (isBest) ...[
                           const SizedBox(width: 8),
-                          const Icon(Icons.check_circle_rounded,
-                              color: AppColors.primary, size: 18),
+                          Icon(Icons.check_circle_rounded,
+                              color: primaryColor, size: 18),
                         ],
                         const SizedBox(width: 12),
                         IconButton(

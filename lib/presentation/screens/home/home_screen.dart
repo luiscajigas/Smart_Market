@@ -57,7 +57,7 @@ class _HomeScreenState extends State<HomeScreen> {
             snap: true,
             pinned: true,
             elevation: 0,
-            backgroundColor: AppColors.background,
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
             flexibleSpace: FlexibleSpaceBar(
               background: Container(
                 padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
@@ -70,12 +70,20 @@ class _HomeScreenState extends State<HomeScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text('${AppMessages.hiGreeting}$name',
-                            style: const TextStyle(
-                                color: AppColors.textSecondary, fontSize: 14)),
+                            style: TextStyle(
+                                color: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.color
+                                    ?.withOpacity(0.7),
+                                fontSize: 14)),
                         const SizedBox(height: 2),
                         Text(AppMessages.buyTodayPrompt,
-                            style: const TextStyle(
-                                color: AppColors.textPrimary,
+                            style: TextStyle(
+                                color: Theme.of(context)
+                                    .textTheme
+                                    .titleLarge
+                                    ?.color,
                                 fontSize: 22,
                                 fontWeight: FontWeight.w800,
                                 letterSpacing: -0.5)),
@@ -121,9 +129,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Container(
                       height: 48,
                       decoration: BoxDecoration(
-                        color: AppColors.inputBackground,
+                        color: Theme.of(context).inputDecorationTheme.fillColor,
                         borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: AppColors.border),
+                        border: Border.all(
+                            color: Theme.of(context)
+                                .dividerColor
+                                .withOpacity(0.1)),
                       ),
                       child: Row(
                         children: [
@@ -148,8 +159,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
                   // Supermarkets
                   Text(AppMessages.nearbySupermarkets,
-                      style: const TextStyle(
-                          color: AppColors.textPrimary,
+                      style: TextStyle(
+                          color: Theme.of(context).textTheme.titleMedium?.color,
                           fontSize: 16,
                           fontWeight: FontWeight.w800)),
                   const SizedBox(height: 12),
@@ -171,9 +182,12 @@ class _HomeScreenState extends State<HomeScreen> {
                             width: 80,
                             margin: const EdgeInsets.only(right: 12),
                             decoration: BoxDecoration(
-                              color: AppColors.cardBackground,
+                              color: Theme.of(context).colorScheme.surface,
                               borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: AppColors.border),
+                              border: Border.all(
+                                  color: Theme.of(context)
+                                      .dividerColor
+                                      .withOpacity(0.1)),
                             ),
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -192,8 +206,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                                 const SizedBox(height: 8),
                                 Text(shop.name,
-                                    style: const TextStyle(
-                                        color: AppColors.textPrimary,
+                                    style: TextStyle(
+                                        color: Theme.of(context)
+                                            .textTheme
+                                            .bodyMedium
+                                            ?.color,
                                         fontSize: 12,
                                         fontWeight: FontWeight.w600)),
                                 Text('${shop.distance}km',
@@ -209,7 +226,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 24),
 
-                  // Products header - Only if there are products
+                  // Featured Products
                   if (hasProducts) ...[
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -218,21 +235,22 @@ class _HomeScreenState extends State<HomeScreen> {
                             isUsingFavorites
                                 ? AppMessages.yourFavorites
                                 : AppMessages.featuredProducts,
-                            style: const TextStyle(
-                                color: AppColors.textPrimary,
+                            style: TextStyle(
+                                color: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.color,
                                 fontSize: 16,
                                 fontWeight: FontWeight.w800)),
-                        GestureDetector(
-                          behavior: HitTestBehavior.opaque,
-                          onTap: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (_) => const ProductListScreen())),
-                          child: Text(AppMessages.seeAllAction,
-                              style: const TextStyle(
-                                  color: AppColors.primary,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600)),
+                        TextButton(
+                          onPressed: () {
+                            final state = context
+                                .findAncestorStateOfType<MainShellState>();
+                            if (state != null) {
+                              state.updateIndex(1);
+                            }
+                          },
+                          child: Text(AppMessages.seeAllAction),
                         ),
                       ],
                     ),

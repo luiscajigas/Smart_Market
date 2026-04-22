@@ -18,7 +18,7 @@ class AiBanner extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppColors.cardBackground,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: AppColors.primary.withOpacity(0.3)),
         ),
@@ -42,8 +42,8 @@ class AiBanner extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(AppMessages.aiRecommends,
-                      style: const TextStyle(
-                          color: AppColors.textPrimary,
+                      style: TextStyle(
+                          color: Theme.of(context).textTheme.titleMedium?.color,
                           fontSize: 16,
                           fontWeight: FontWeight.w800)),
                   const SizedBox(height: 2),
@@ -64,7 +64,7 @@ class AiBanner extends StatelessWidget {
   void _showAiRecommendations(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -75,8 +75,8 @@ class AiBanner extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(AppMessages.aiRecommendationsTitle,
-                style: const TextStyle(
-                    color: AppColors.textPrimary,
+                style: TextStyle(
+                    color: Theme.of(context).textTheme.titleLarge?.color,
                     fontSize: 20,
                     fontWeight: FontWeight.w800)),
             const SizedBox(height: 16),
@@ -99,7 +99,7 @@ class AiBanner extends StatelessWidget {
                 ),
                 child: Text(AppMessages.understoodAction,
                     style: const TextStyle(
-                        color: Colors.black, fontWeight: FontWeight.bold)),
+                        color: Colors.white, fontWeight: FontWeight.bold)),
               ),
             ),
           ],

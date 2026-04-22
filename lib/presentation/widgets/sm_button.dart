@@ -18,10 +18,13 @@ class SmButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final child = isLoading
-        ? const SizedBox(
+        ? SizedBox(
             width: 22,
             height: 22,
-            child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.black),
+            child: CircularProgressIndicator(
+              strokeWidth: 2.5,
+              color: outlined ? AppColors.primary : Colors.white,
+            ),
           )
         : Text(label);
 
@@ -32,9 +35,12 @@ class SmButton extends StatelessWidget {
         child: OutlinedButton(
           onPressed: isLoading ? null : onPressed,
           style: OutlinedButton.styleFrom(
-            side: const BorderSide(color: AppColors.border, width: 1.5),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-            foregroundColor: AppColors.textPrimary,
+            side: BorderSide(
+                color: Theme.of(context).dividerColor.withOpacity(0.2),
+                width: 1.5),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            foregroundColor: Theme.of(context).textTheme.bodyLarge?.color,
           ),
           child: child,
         ),

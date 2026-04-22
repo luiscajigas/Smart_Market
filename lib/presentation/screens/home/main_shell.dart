@@ -47,10 +47,12 @@ class MainShellState extends State<MainShell> {
         return Scaffold(
           body: IndexedStack(index: _currentIndex, children: _screens),
           bottomNavigationBar: Container(
-            decoration: const BoxDecoration(
-              color: AppColors.surface,
-              border:
-                  Border(top: BorderSide(color: AppColors.border, width: 1)),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+              border: Border(
+                  top: BorderSide(
+                      color: Theme.of(context).dividerColor.withOpacity(0.1),
+                      width: 1)),
             ),
             child: SafeArea(
               child: SizedBox(
@@ -119,6 +121,11 @@ class _NavItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isActive = index == current;
+    final theme = Theme.of(context);
+    final settings = context.watch<SettingsProvider>();
+    final primaryColor =
+        settings.isDarkMode ? AppColors.primaryGreen : AppColors.primaryBlue;
+    final hintColor = theme.textTheme.bodySmall?.color ?? AppColors.textHint;
 
     if (isAi) {
       return Expanded(
@@ -133,20 +140,25 @@ class _NavItem extends StatelessWidget {
                 height: 32,
                 decoration: BoxDecoration(
                   gradient: isActive
-                      ? AppColors.primaryGradient
-                      : const LinearGradient(
-                          colors: [AppColors.border, AppColors.border]),
+                      ? (settings.isDarkMode
+                          ? AppColors.primaryGradientGreen
+                          : AppColors.primaryGradientBlue)
+                      : LinearGradient(
+                          colors: [
+                            theme.dividerColor.withOpacity(0.1),
+                            theme.dividerColor.withOpacity(0.1)
+                          ],
+                        ),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Icon(icon,
-                    size: 18,
-                    color: isActive ? Colors.black : AppColors.textHint),
+                    size: 18, color: isActive ? Colors.white : hintColor),
               ),
               const SizedBox(height: 2),
               Text(label,
                   style: TextStyle(
                       fontSize: 10,
-                      color: isActive ? AppColors.primary : AppColors.textHint,
+                      color: isActive ? primaryColor : hintColor,
                       fontWeight: FontWeight.w600)),
             ],
           ),
@@ -161,14 +173,12 @@ class _NavItem extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon,
-                size: 22,
-                color: isActive ? AppColors.primary : AppColors.textHint),
+            Icon(icon, size: 22, color: isActive ? primaryColor : hintColor),
             const SizedBox(height: 2),
             Text(label,
                 style: TextStyle(
                     fontSize: 10,
-                    color: isActive ? AppColors.primary : AppColors.textHint,
+                    color: isActive ? primaryColor : hintColor,
                     fontWeight: isActive ? FontWeight.w600 : FontWeight.w400)),
           ],
         ),
