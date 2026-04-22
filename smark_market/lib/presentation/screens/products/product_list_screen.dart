@@ -21,12 +21,13 @@ class _ProductListScreenState extends State<ProductListScreen> {
   }
 
   Future<void> _fetchProducts() async {
-    // Por ahora traemos una búsqueda por defecto o las últimas guardadas
-    final response = await ApiService.searchProducts('arroz'); // Ejemplo
+    // For now we fetch a default search or the last saved ones
+    final response = await ApiService.searchProducts('arroz'); // Example
     if (mounted) {
       setState(() {
         if (response.success && response.data != null) {
-          final searchResponse = SearchResponse.fromList(response.data!, 'arroz');
+          final searchResponse =
+              SearchResponse.fromList(response.data!, 'arroz');
           _products = searchResponse.results;
         }
         _isLoading = false;
@@ -39,7 +40,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Productos Comparados',
+        title: const Text('Compared Products',
             style: TextStyle(color: AppColors.textPrimary)),
         backgroundColor: AppColors.background,
         elevation: 0,
@@ -50,7 +51,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
               child: CircularProgressIndicator(color: AppColors.primary))
           : _products.isEmpty
               ? const Center(
-                  child: Text('No hay productos disponibles',
+                  child: Text('No products available',
                       style: TextStyle(color: AppColors.textSecondary)))
               : Padding(
                   padding: const EdgeInsets.all(16.0),
@@ -60,7 +61,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                       crossAxisCount: 2,
                       crossAxisSpacing: 12,
                       mainAxisSpacing: 12,
-                      childAspectRatio: 0.75, // Ajustado para el diseño real
+                      childAspectRatio: 0.75, // Adjusted for the real design
                     ),
                     itemCount: _products.length,
                     itemBuilder: (context, index) {

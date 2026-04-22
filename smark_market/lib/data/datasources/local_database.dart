@@ -1,5 +1,6 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'package:flutter/foundation.dart';
 
 class LocalDatabase {
   static final LocalDatabase instance = LocalDatabase._init();
@@ -17,7 +18,7 @@ class LocalDatabase {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, filePath);
 
-    print('--- RUTA DE LA BASE DE DATOS: $path ---');
+    debugPrint('--- DATABASE PATH: $path ---');
 
     return await openDatabase(
       path,
@@ -27,7 +28,7 @@ class LocalDatabase {
   }
 
   Future _createDB(Database db, int version) async {
-    // Tabla para configuraciones (idioma, tema, etc)
+    // Table for settings (language, theme, etc)
     await db.execute('''
       CREATE TABLE settings (
         key TEXT PRIMARY KEY,
@@ -35,7 +36,7 @@ class LocalDatabase {
       )
     ''');
 
-    // Tabla para productos favoritos offline
+    // Table for offline favorite products
     await db.execute('''
       CREATE TABLE favorites (
         id TEXT PRIMARY KEY,

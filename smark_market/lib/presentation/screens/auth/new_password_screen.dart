@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_messages.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../widgets/sm_button.dart';
 import '../../widgets/sm_text_field.dart';
@@ -62,7 +63,7 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
               ),
               const SizedBox(height: 20),
               const Text(
-                '¡Contraseña actualizada!',
+                AppMessages.passwordUpdatedTitle,
                 style: TextStyle(
                     color: AppColors.textPrimary,
                     fontSize: 20,
@@ -71,7 +72,7 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
               ),
               const SizedBox(height: 8),
               const Text(
-                'Tu contraseña ha sido restablecida exitosamente.',
+                AppMessages.passwordUpdatedDescription,
                 style: TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 14,
@@ -80,7 +81,7 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
               ),
               const SizedBox(height: 24),
               SmButton(
-                label: 'Iniciar sesión',
+                label: AppMessages.signInAction,
                 onPressed: () => Navigator.pushAndRemoveUntil(
                   context,
                   MaterialPageRoute(builder: (_) => const LoginScreen()),
@@ -131,7 +132,7 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
                 ),
                 const SizedBox(height: 28),
                 const Text(
-                  'Nueva\ncontraseña',
+                  AppMessages.newPasswordTitle,
                   style: TextStyle(
                     color: AppColors.textPrimary,
                     fontSize: 32,
@@ -142,7 +143,7 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
                 ),
                 const SizedBox(height: 12),
                 const Text(
-                  'Crea una contraseña segura para tu cuenta.',
+                  AppMessages.newPasswordInstructions,
                   style: TextStyle(
                       color: AppColors.textSecondary,
                       fontSize: 15,
@@ -151,7 +152,7 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
                 const SizedBox(height: 40),
                 SmTextField(
                   controller: _passwordController,
-                  label: 'Nueva contraseña',
+                  label: AppMessages.newPasswordLabel,
                   hint: '••••••••',
                   obscureText: _obscurePassword,
                   prefixIcon:
@@ -167,21 +168,21 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
                         setState(() => _obscurePassword = !_obscurePassword),
                   ),
                   validator: (v) {
-                    if (v == null || v.isEmpty) return 'La contraseña es requerida';
-                    if (v.length < 8) return 'Mínimo 8 caracteres';
+                    if (v == null || v.isEmpty) return AppMessages.passwordRequiredError;
+                    if (v.length < 8) return AppMessages.passwordMinLengthError;
                     if (!v.contains(RegExp(r'[A-Z]')))
-                      return 'Debe tener mayúsculas';
+                      return AppMessages.passwordUppercaseError;
                     if (!v.contains(RegExp(r'[a-z]')))
-                      return 'Debe tener minúsculas';
+                      return AppMessages.passwordLowercaseError;
                     if (!v.contains(RegExp(r'[0-9]')))
-                      return 'Debe tener números';
+                      return AppMessages.passwordNumberError;
                     return null;
                   },
                 ),
                 const SizedBox(height: 20),
                 SmTextField(
                   controller: _confirmController,
-                  label: 'Confirmar contraseña',
+                  label: AppMessages.confirmPasswordLabel,
                   hint: '••••••••',
                   obscureText: _obscureConfirm,
                   textInputAction: TextInputAction.done,
@@ -199,15 +200,15 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
                         setState(() => _obscureConfirm = !_obscureConfirm),
                   ),
                   validator: (v) {
-                    if (v == null || v.isEmpty) return 'Confirma tu contraseña';
+                    if (v == null || v.isEmpty) return AppMessages.confirmPasswordRequired;
                     if (v != _passwordController.text)
-                      return 'Las contraseñas no coinciden';
+                      return AppMessages.passwordsNoMatch;
                     return null;
                   },
                 ),
                 const SizedBox(height: 32),
                 SmButton(
-                    label: 'Cambiar contraseña',
+                    label: AppMessages.changePasswordAction,
                     onPressed: _changePassword,
                     isLoading: _isLoading),
               ],

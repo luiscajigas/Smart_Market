@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_messages.dart';
 import 'package:provider/provider.dart';
 import '../../../data/providers/auth_provider.dart';
 import '../../widgets/sm_button.dart';
@@ -46,7 +47,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (mounted) {
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Cuenta creada con éxito'),
+          content: Text(AppMessages.registerSuccessTitle),
           backgroundColor: Colors.green,
         ));
         Navigator.pushAndRemoveUntil(
@@ -56,7 +57,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(authProvider.errorMessage ?? 'Error al crear cuenta'),
+          content:
+              Text(authProvider.errorMessage ?? AppMessages.registerErrorTitle),
           backgroundColor: AppColors.error,
         ));
       }
@@ -64,13 +66,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   String? _validatePassword(String? v) {
-    if (v == null || v.isEmpty) return 'La contraseña es requerida';
-    if (v.length < 8) return 'Mínimo 8 caracteres';
-    if (!v.contains(RegExp(r'[A-Z]')))
-      return 'Debe tener al menos una mayúscula';
-    if (!v.contains(RegExp(r'[a-z]')))
-      return 'Debe tener al menos una minúscula';
-    if (!v.contains(RegExp(r'[0-9]'))) return 'Debe tener al menos un número';
+    if (v == null || v.isEmpty) return AppMessages.passwordRequired;
+    if (v.length < 8) return AppMessages.minCharacters;
+    if (!v.contains(RegExp(r'[A-Z]'))) return AppMessages.uppercaseRequired;
+    if (!v.contains(RegExp(r'[a-z]'))) return AppMessages.lowercaseRequired;
+    if (!v.contains(RegExp(r'[0-9]'))) return AppMessages.numberRequired;
     return null;
   }
 
@@ -95,7 +95,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 const LogoWidget(size: 48, showText: false),
                 const SizedBox(height: 32),
                 const Text(
-                  'Crea tu\ncuenta',
+                  AppMessages.createAccountTitle,
                   style: TextStyle(
                     color: AppColors.textPrimary,
                     fontSize: 32,
@@ -105,40 +105,42 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text('Únete a Smart Market hoy',
+                const Text(AppMessages.joinSmartMarket,
                     style: TextStyle(
                         color: AppColors.textSecondary, fontSize: 15)),
                 const SizedBox(height: 40),
                 SmTextField(
                   controller: _nameController,
-                  label: 'Nombre completo',
-                  hint: 'Juan Pérez',
+                  label: AppMessages.fullNameLabel,
+                  hint: AppMessages.fullNameHint,
                   prefixIcon:
                       const Icon(Icons.person_outline_rounded, size: 20),
                   validator: (v) {
-                    if (v == null || v.isEmpty) return 'El nombre es requerido';
-                    if (v.trim().length < 2) return 'Mínimo 2 caracteres';
+                    if (v == null || v.isEmpty) return AppMessages.nameRequired;
+                    if (v.trim().length < 2)
+                      return AppMessages.minNameCharacters;
                     return null;
                   },
                 ),
                 const SizedBox(height: 20),
                 SmTextField(
                   controller: _emailController,
-                  label: 'Correo electrónico',
-                  hint: 'tu@correo.com',
+                  label: AppMessages.emailLabel,
+                  hint: AppMessages.emailHint,
                   keyboardType: TextInputType.emailAddress,
                   prefixIcon: const Icon(Icons.mail_outline_rounded, size: 20),
                   validator: (v) {
-                    if (v == null || v.isEmpty) return 'El correo es requerido';
+                    if (v == null || v.isEmpty)
+                      return AppMessages.emailRequired;
                     if (!RegExp(r'^[\w.-]+@[\w.-]+\.\w+$').hasMatch(v))
-                      return 'Correo inválido';
+                      return AppMessages.invalidEmail;
                     return null;
                   },
                 ),
                 const SizedBox(height: 20),
                 SmTextField(
                   controller: _passwordController,
-                  label: 'Contraseña',
+                  label: AppMessages.passwordLabel,
                   hint: '••••••••',
                   obscureText: _obscurePassword,
                   prefixIcon: const Icon(Icons.lock_outline_rounded, size: 20),
@@ -157,7 +159,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 const SizedBox(height: 20),
                 SmTextField(
                   controller: _confirmController,
-                  label: 'Confirmar contraseña',
+                  label: AppMessages.confirmPasswordLabel,
                   hint: '••••••••',
                   obscureText: _obscureConfirm,
                   textInputAction: TextInputAction.done,
@@ -174,16 +176,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         setState(() => _obscureConfirm = !_obscureConfirm),
                   ),
                   validator: (v) {
-                    if (v == null || v.isEmpty) return 'Confirma tu contraseña';
+                    if (v == null || v.isEmpty)
+                      return AppMessages.confirmPasswordRequired;
                     if (v != _passwordController.text)
-                      return 'Las contraseñas no coinciden';
+                      return AppMessages.passwordsNoMatch;
                     return null;
                   },
                 ),
                 const SizedBox(height: 32),
                 Consumer<AuthProvider>(
                   builder: (context, auth, _) => SmButton(
-                    label: 'Crear cuenta',
+                    label: AppMessages.signUpAction,
                     onPressed: _register,
                     isLoading: auth.isLoading,
                   ),
@@ -192,14 +195,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text('¿Ya tienes cuenta?',
+                    const Text(AppMessages.alreadyHaveAccount,
                         style: TextStyle(color: AppColors.textSecondary)),
                     TextButton(
                       onPressed: () => Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(builder: (_) => const LoginScreen()),
                       ),
-                      child: const Text('Inicia sesión'),
+                      child: const Text(AppMessages.signInAction),
                     ),
                   ],
                 ),

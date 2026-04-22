@@ -1,6 +1,8 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../../core/constants/app_constants.dart';
+import '../../core/constants/app_messages.dart';
 
 class ApiResponse<T> {
   final bool success;
@@ -41,14 +43,14 @@ class ApiService {
         return ApiResponse(
           success: data['success'] ??
               (response.statusCode >= 200 && response.statusCode < 300),
-          message: data['message'] ?? 'Éxito',
+          message: data['message'] ?? 'Success',
           data: data,
           statusCode: response.statusCode,
         );
       } else {
         return ApiResponse(
           success: response.statusCode >= 200 && response.statusCode < 300,
-          message: 'Éxito',
+          message: 'Success',
           data: {'results': data},
           statusCode: response.statusCode,
         );
@@ -56,7 +58,7 @@ class ApiService {
     } catch (e) {
       return ApiResponse(
         success: false,
-        message: 'Error de conexión. Verifica tu red.',
+        message: 'Connection error. Check your network.',
         statusCode: 0,
       );
     }
@@ -64,38 +66,38 @@ class ApiService {
 
   static Future<ApiResponse<List<dynamic>>> searchProducts(String query) async {
     final url = '${AppConstants.baseUrl}/search?q=$query';
-    print('Connecting to: $url');
+    debugPrint('Connecting to: $url');
     try {
-      // Usar query parameter 'q' según el backend
+      // Use query parameter 'q' according to the backend
       final response = await http
           .get(
             Uri.parse(url),
           )
           .timeout(
-              const Duration(seconds: 45)); // Aumentar timeout para scraping
+              const Duration(seconds: 45)); // Increase timeout for scraping
 
-      print('Response Status: ${response.statusCode}');
+      debugPrint('Response Status: ${response.statusCode}');
       final data = jsonDecode(response.body);
 
       if (response.statusCode == 200 && data is List) {
         return ApiResponse(
           success: true,
-          message: 'Éxito',
+          message: 'Success',
           data: data,
           statusCode: response.statusCode,
         );
       } else {
         return ApiResponse(
           success: false,
-          message: 'Error del servidor o formato inválido',
+          message: AppMessages.serverError,
           statusCode: response.statusCode,
         );
       }
     } catch (e) {
-      print('Search Error: $e');
+      debugPrint('Search Error: $e');
       return ApiResponse(
         success: false,
-        message: 'Error de conexión. Verifica tu red.',
+        message: AppMessages.connectionError,
         statusCode: 0,
       );
     }

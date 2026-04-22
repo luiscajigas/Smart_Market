@@ -6,7 +6,7 @@ class AppConstants {
   static String get baseUrl {
     String url = dotenv.env['API_BASE_URL'] ?? '';
     if (url.isEmpty) {
-      throw Exception('API_BASE_URL no encontrada en el archivo .env');
+      throw Exception('API_BASE_URL not found in .env file');
     }
 
     // Android emulator mapping - Only check Platform if NOT on Web

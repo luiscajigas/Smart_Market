@@ -1,5 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/constants/app_constants.dart';
+import '../../core/constants/app_messages.dart';
 
 class AuthResult {
   final bool success;
@@ -25,7 +26,7 @@ class AuthRepository {
       );
 
       if (response.user != null) {
-        // Opcionalmente, insertar en una tabla de perfiles pública
+        // Optionally insert into public profiles table
         try {
           await _client.from('profiles').upsert({
             'id': response.user!.id,
@@ -34,24 +35,24 @@ class AuthRepository {
             'updated_at': DateTime.now().toIso8601String(),
           });
         } catch (e) {
-          // Si falla el perfil, igual el usuario se creó en Auth
-          print('Error al crear perfil: $e');
+          // If profile fails, user was still created in Auth
+          print('Error creating profile: $e');
         }
 
         return AuthResult(
           success: true,
-          message: 'Registro exitoso.',
+          message: AppMessages.registerSuccess,
           data: {'user': response.user?.toJson()},
         );
       }
-      return AuthResult(success: false, message: 'Error en el registro');
+      return AuthResult(success: false, message: AppMessages.registerError);
     } on AuthException catch (e) {
       if (e.message.contains('already registered') || e.message.contains('already exists')) {
-        return AuthResult(success: false, message: 'Este correo ya está registrado. Intenta iniciar sesión.');
+        return AuthResult(success: false, message: AppMessages.emailAlreadyRegistered);
       }
       return AuthResult(success: false, message: e.message);
     } catch (e) {
-      return AuthResult(success: false, message: 'Ocurrió un error inesperado');
+      return AuthResult(success: false, message: AppMessages.unexpectedError);
     }
   }
 
@@ -68,15 +69,15 @@ class AuthRepository {
       if (response.user != null) {
         return AuthResult(
           success: true,
-          message: 'Inicio de sesión exitoso',
+          message: AppMessages.loginSuccess,
           data: {'user': response.user?.toJson()},
         );
       }
-      return AuthResult(success: false, message: 'Error al iniciar sesión');
+      return AuthResult(success: false, message: AppMessages.loginError);
     } on AuthException catch (e) {
       return AuthResult(success: false, message: e.message);
     } catch (e) {
-      return AuthResult(success: false, message: 'Ocurrió un error inesperado');
+      return AuthResult(success: false, message: AppMessages.unexpectedError);
     }
   }
 
@@ -85,11 +86,11 @@ class AuthRepository {
     try {
       await _client.auth.resetPasswordForEmail(email);
       return AuthResult(
-          success: true, message: 'Se envió un correo de recuperación');
+          success: true, message: AppMessages.passwordResetSent);
     } on AuthException catch (e) {
       return AuthResult(success: false, message: e.message);
     } catch (e) {
-      return AuthResult(success: false, message: 'Ocurrió un error inesperado');
+      return AuthResult(success: false, message: AppMessages.unexpectedError);
     }
   }
 
@@ -107,15 +108,15 @@ class AuthRepository {
       if (response.session != null) {
         return AuthResult(
           success: true,
-          message: 'Código verificado correctamente',
+          message: AppMessages.codeVerified,
           data: {'session': response.session},
         );
       }
-      return AuthResult(success: false, message: 'Código inválido o expirado');
+      return AuthResult(success: false, message: AppMessages.invalidCode);
     } on AuthException catch (e) {
       return AuthResult(success: false, message: e.message);
     } catch (e) {
-      return AuthResult(success: false, message: 'Ocurrió un error inesperado');
+      return AuthResult(success: false, message: AppMessages.unexpectedError);
     }
   }
 
@@ -126,11 +127,11 @@ class AuthRepository {
       await _client.auth.updateUser(
         UserAttributes(password: nuevaContrasena),
       );
-      return AuthResult(success: true, message: 'Contraseña actualizada');
+      return AuthResult(success: true, message: AppMessages.passwordUpdated);
     } on AuthException catch (e) {
       return AuthResult(success: false, message: e.message);
     } catch (e) {
-      return AuthResult(success: false, message: 'Ocurrió un error inesperado');
+      return AuthResult(success: false, message: AppMessages.unexpectedError);
     }
   }
 

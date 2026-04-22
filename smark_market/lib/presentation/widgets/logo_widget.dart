@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/constants/app_messages.dart';
 
 class LogoWidget extends StatelessWidget {
   final double size;
@@ -35,7 +36,7 @@ class LogoWidget extends StatelessWidget {
                 height: size,
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) {
-                  // Fallback por si la imagen no existe todavía
+                  // Fallback if the image does not exist yet
                   return Text(
                     'SM',
                     style: TextStyle(
@@ -63,7 +64,7 @@ class LogoWidget extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           const Text(
-            'Tu mercado inteligente',
+            AppMessages.yourSmartMarket,
             style: TextStyle(
               color: AppColors.textHint,
               fontSize: 13,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_messages.dart';
 import '../../../data/providers/product_provider.dart';
 import '../../../data/providers/favorites_provider.dart';
 import '../../../data/models/product_model.dart';
@@ -50,14 +51,14 @@ class _CompareScreenState extends State<CompareScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Comparar precios',
+                  const Text(AppMessages.compareTitle,
                       style: TextStyle(
                           color: AppColors.textPrimary,
                           fontSize: 24,
                           fontWeight: FontWeight.w800,
                           letterSpacing: -0.5)),
                   const SizedBox(height: 4),
-                  const Text('Encuentra el mejor precio por supermercado',
+                  const Text(AppMessages.compareSubtitle,
                       style: TextStyle(
                           color: AppColors.textSecondary, fontSize: 14)),
                   const SizedBox(height: 16),
@@ -68,7 +69,7 @@ class _CompareScreenState extends State<CompareScreen> {
                     onSubmitted: _performSearch,
                     style: const TextStyle(color: AppColors.textPrimary),
                     decoration: InputDecoration(
-                      hintText: 'Buscar producto (ej. Leche, Arroz...)',
+                      hintText: AppMessages.searchProductHint,
                       hintStyle: const TextStyle(color: AppColors.textHint),
                       prefixIcon: const Icon(Icons.search_rounded,
                           color: AppColors.primary),
@@ -92,14 +93,14 @@ class _CompareScreenState extends State<CompareScreen> {
             else if (searchResponse == null)
               const Expanded(
                 child: Center(
-                  child: Text('Busca algo para empezar a comparar',
+                  child: Text(AppMessages.startComparingPrompt,
                       style: TextStyle(color: AppColors.textSecondary)),
                 ),
               )
             else if (productProvider.groupedProducts.isEmpty)
               const Expanded(
                 child: Center(
-                  child: Text('No se encontraron productos',
+                  child: Text(AppMessages.noProductsFound,
                       style: TextStyle(color: AppColors.textSecondary)),
                 ),
               )
@@ -187,7 +188,7 @@ class _ProductComparisonCard extends StatelessWidget {
                 ),
                 Consumer<FavoritesProvider>(
                   builder: (context, favorites, _) {
-                    // Buscar el resultado original de este producto para el favorito
+                    // Search for the original result of this product for favorites
                     final resultsForThisProduct = context
                         .read<ProductProvider>()
                         .products
@@ -216,7 +217,7 @@ class _ProductComparisonCard extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             const Text(
-              'Precios por supermercado:',
+              AppMessages.pricesPerSupermarket,
               style: TextStyle(
                   color: AppColors.textSecondary,
                   fontSize: 12,
@@ -279,19 +280,10 @@ class _ProductComparisonCard extends StatelessWidget {
                         ],
                         const SizedBox(width: 12),
                         IconButton(
-                          onPressed: () {
-                            // Buscar el link original de este supermercado
-                            final originalProduct = context
-                                .read<ProductProvider>()
-                                .products
-                                .firstWhere((p) =>
-                                    p.name == product.name &&
-                                    p.source == entry.key);
-                            if (originalProduct.url != null) {
-                              // TODO: Lanzar URL con url_launcher
-                              print('Comprando en: ${originalProduct.url}');
-                            }
-                          },
+                          onPressed: () => context
+                              .read<ProductProvider>()
+                              .trackProductClick(product,
+                                  supermarket: entry.key),
                           icon: const Icon(Icons.shopping_bag_outlined,
                               size: 20, color: AppColors.primary),
                           style: IconButton.styleFrom(
@@ -320,7 +312,7 @@ class _ProductComparisonCard extends StatelessWidget {
                         color: Colors.green, size: 20),
                     const SizedBox(width: 10),
                     Text(
-                      'Ahorras ${_formatPrice(product.savings)} comprando en ${product.bestSupermarket}',
+                      '${AppMessages.savingsPrefix}${_formatPrice(product.savings)}${AppMessages.buyingAt}${product.bestSupermarket}',
                       style: const TextStyle(
                         color: Colors.green,
                         fontWeight: FontWeight.bold,

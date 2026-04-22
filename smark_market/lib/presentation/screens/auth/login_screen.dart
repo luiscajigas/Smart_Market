@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_messages.dart';
 import 'package:provider/provider.dart';
 import '../../../data/providers/auth_provider.dart';
 import '../../widgets/sm_button.dart';
@@ -40,12 +41,15 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (mounted) {
       if (success) {
-        Navigator.of(context).pushAndRemoveUntil(
+        Navigator.pushAndRemoveUntil(
+          context,
           MaterialPageRoute(builder: (_) => const MainShell()),
-          (route) => false,
-        );      } else {
+          (_) => false,
+        );
+      } else {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(authProvider.errorMessage ?? 'Error al iniciar sesión'),
+          content:
+              Text(authProvider.errorMessage ?? AppMessages.loginErrorTitle),
           backgroundColor: AppColors.error,
         ));
       }
@@ -55,12 +59,6 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 28),
@@ -69,11 +67,11 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 12),
-                const LogoWidget(size: 48, showText: false),
-                const SizedBox(height: 32),
+                const SizedBox(height: 60),
+                const LogoWidget(size: 60),
+                const SizedBox(height: 48),
                 const Text(
-                  'Bienvenido\nde nuevo',
+                  AppMessages.welcomeBackTitle,
                   style: TextStyle(
                     color: AppColors.textPrimary,
                     fontSize: 32,
@@ -83,36 +81,33 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
-                  'Ingresa tus credenciales para continuar',
-                  style:
-                      TextStyle(color: AppColors.textSecondary, fontSize: 15),
-                ),
+                const Text(AppMessages.enterCredentials,
+                    style: TextStyle(
+                        color: AppColors.textSecondary, fontSize: 15)),
                 const SizedBox(height: 40),
                 SmTextField(
                   controller: _emailController,
-                  label: 'Correo electrónico',
-                  hint: 'tu@correo.com',
+                  label: AppMessages.emailLabel,
+                  hint: AppMessages.emailHint,
                   keyboardType: TextInputType.emailAddress,
-                  prefixIcon:
-                      const Icon(Icons.mail_outline_rounded, size: 20),
+                  prefixIcon: const Icon(Icons.mail_outline_rounded, size: 20),
                   validator: (v) {
-                    if (v == null || v.isEmpty) return 'El correo es requerido';
+                    if (v == null || v.isEmpty)
+                      return AppMessages.emailRequired;
                     if (!RegExp(r'^[\w.-]+@[\w.-]+\.\w+$').hasMatch(v))
-                      return 'Correo inválido';
+                      return AppMessages.invalidEmail;
                     return null;
                   },
                 ),
                 const SizedBox(height: 20),
                 SmTextField(
                   controller: _passwordController,
-                  label: 'Contraseña',
+                  label: AppMessages.passwordLabel,
                   hint: '••••••••',
                   obscureText: _obscurePassword,
                   textInputAction: TextInputAction.done,
                   onFieldSubmitted: (_) => _login(),
-                  prefixIcon:
-                      const Icon(Icons.lock_outline_rounded, size: 20),
+                  prefixIcon: const Icon(Icons.lock_outline_rounded, size: 20),
                   suffixIcon: IconButton(
                     icon: Icon(
                       _obscurePassword
@@ -124,7 +119,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         setState(() => _obscurePassword = !_obscurePassword),
                   ),
                   validator: (v) {
-                    if (v == null || v.isEmpty) return 'La contraseña es requerida';
+                    if (v == null || v.isEmpty)
+                      return AppMessages.passwordRequired;
                     return null;
                   },
                 ),
@@ -137,28 +133,30 @@ class _LoginScreenState extends State<LoginScreen> {
                       MaterialPageRoute(
                           builder: (_) => const ForgotPasswordScreen()),
                     ),
-                    child: const Text('¿Olvidaste tu contraseña?'),
+                    child: const Text(AppMessages.forgotPasswordAction),
                   ),
                 ),
-                const SizedBox(height: 24),
-                SmButton(
-                  label: 'Iniciar sesión',
-                  onPressed: _login,
-                  isLoading: context.watch<AuthProvider>().isLoading,
+                const SizedBox(height: 32),
+                Consumer<AuthProvider>(
+                  builder: (context, auth, _) => SmButton(
+                    label: AppMessages.signInAction,
+                    onPressed: _login,
+                    isLoading: auth.isLoading,
+                  ),
                 ),
                 const SizedBox(height: 32),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text('¿No tienes cuenta?',
+                    const Text(AppMessages.dontHaveAccount,
                         style: TextStyle(color: AppColors.textSecondary)),
                     TextButton(
-                      onPressed: () => Navigator.pushReplacement(
+                      onPressed: () => Navigator.push(
                         context,
                         MaterialPageRoute(
                             builder: (_) => const RegisterScreen()),
                       ),
-                      child: const Text('Regístrate'),
+                      child: const Text(AppMessages.signUpAction),
                     ),
                   ],
                 ),

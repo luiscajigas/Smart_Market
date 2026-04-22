@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_messages.dart';
+import '../../../data/providers/auth_provider.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../widgets/sm_button.dart';
 import '../../widgets/sm_text_field.dart';
+import '../../widgets/logo_widget.dart';
 import 'verify_code_screen.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
@@ -36,8 +40,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) =>
-            VerifyCodeScreen(email: _emailController.text.trim()),
+        builder: (_) => VerifyCodeScreen(email: _emailController.text.trim()),
       ),
     );
   }
@@ -59,22 +62,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 24),
-                Container(
-                  width: 56,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                        color: AppColors.primary.withOpacity(0.3)),
-                  ),
-                  child: const Icon(Icons.lock_reset_rounded,
-                      color: AppColors.primary, size: 28),
-                ),
-                const SizedBox(height: 28),
+                const SizedBox(height: 12),
+                const LogoWidget(size: 48, showText: false),
+                const SizedBox(height: 32),
                 const Text(
-                  'Recupera tu\ncontraseña',
+                  AppMessages.recoverPasswordTitle,
                   style: TextStyle(
                     color: AppColors.textPrimary,
                     fontSize: 32,
@@ -83,61 +75,42 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     letterSpacing: -0.8,
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 8),
                 const Text(
-                  'Ingresa tu correo y te enviaremos un código de 6 dígitos.',
-                  style: TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: 15,
-                      height: 1.6),
+                  AppMessages.enterEmailInstructions,
+                  style:
+                      TextStyle(color: AppColors.textSecondary, fontSize: 15),
                 ),
                 const SizedBox(height: 40),
                 SmTextField(
                   controller: _emailController,
-                  label: 'Correo electrónico',
-                  hint: 'tu@correo.com',
+                  label: AppMessages.emailLabel,
+                  hint: AppMessages.emailHint,
                   keyboardType: TextInputType.emailAddress,
                   textInputAction: TextInputAction.done,
                   onFieldSubmitted: (_) => _sendCode(),
-                  prefixIcon:
-                      const Icon(Icons.mail_outline_rounded, size: 20),
+                  prefixIcon: const Icon(Icons.mail_outline_rounded, size: 20),
                   validator: (v) {
-                    if (v == null || v.isEmpty) return 'El correo es requerido';
+                    if (v == null || v.isEmpty)
+                      return AppMessages.emailRequired;
                     if (!RegExp(r'^[\w.-]+@[\w.-]+\.\w+$').hasMatch(v))
-                      return 'Correo inválido';
+                      return AppMessages.invalidEmail;
                     return null;
                   },
                 ),
                 const SizedBox(height: 32),
-                SmButton(
-                    label: 'Enviar código',
+                Consumer<AuthProvider>(
+                  builder: (context, auth, _) => SmButton(
+                    label: AppMessages.sendCodeAction,
                     onPressed: _sendCode,
-                    isLoading: _isLoading),
+                    isLoading: auth.isLoading,
+                  ),
+                ),
                 const SizedBox(height: 24),
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withOpacity(0.05),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                        color: AppColors.primary.withOpacity(0.15)),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.info_outline_rounded,
-                          color: AppColors.primary, size: 18),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          'Si el correo existe, recibirás un código válido por 15 minutos.',
-                          style: TextStyle(
-                              color: AppColors.textSecondary,
-                              fontSize: 13,
-                              height: 1.5),
-                        ),
-                      ),
-                    ],
-                  ),
+                const Text(
+                  AppMessages.emailExpiryInfo,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: AppColors.textHint, fontSize: 13),
                 ),
               ],
             ),

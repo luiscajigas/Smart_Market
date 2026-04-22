@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_messages.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../widgets/sm_button.dart';
 import 'new_password_screen.dart';
@@ -88,7 +89,7 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
               ),
               const SizedBox(height: 28),
               const Text(
-                'Código de\nverificación',
+                AppMessages.verificationTitle,
                 style: TextStyle(
                   color: AppColors.textPrimary,
                   fontSize: 32,
@@ -99,7 +100,7 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
               ),
               const SizedBox(height: 12),
               Text(
-                'Código enviado a\n${widget.email}',
+                '${AppMessages.codeSentTo}${widget.email}',
                 style: const TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 15,
@@ -126,7 +127,7 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
               ),
               const SizedBox(height: 48),
               SmButton(
-                label: 'Verificar código',
+                label: AppMessages.verifyCodeAction,
                 onPressed: _code.length == 6 ? _verifyCode : null,
                 isLoading: _isLoading,
               ),
@@ -134,7 +135,7 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
               Center(
                 child: TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text('Reenviar código'),
+                  child: const Text(AppMessages.resendCodeAction),
                 ),
               ),
             ],

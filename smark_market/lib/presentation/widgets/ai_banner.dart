@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/constants/app_messages.dart';
 
 class AiBanner extends StatelessWidget {
   const AiBanner({super.key});
@@ -34,15 +35,15 @@ class AiBanner extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('IA recomienda',
+                  const Text(AppMessages.aiRecommends,
                       style: TextStyle(
                           color: AppColors.primary,
                           fontSize: 12,
                           fontWeight: FontWeight.w600)),
-                  SizedBox(height: 2),
+                  const SizedBox(height: 2),
                   Text(
-                    'Puedes ahorrar \$22.000 este mes comprando en 2 supermercados.',
-                    style: TextStyle(
+                    '${AppMessages.saveAmountMonthPrefix}\$22.000${AppMessages.saveAmountMonthSuffix}',
+                    style: const TextStyle(
                         color: AppColors.textPrimary,
                         fontSize: 13,
                         height: 1.4),
@@ -71,18 +72,18 @@ class AiBanner extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Recomendaciones de IA',
+            const Text(AppMessages.aiRecommendationsTitle,
                 style: TextStyle(
                     color: AppColors.textPrimary,
                     fontSize: 20,
                     fontWeight: FontWeight.w800)),
             const SizedBox(height: 16),
-            _buildTipItem('📍 Compra granos en Éxito',
-                'Están un 15% más baratos que en otros sitios esta semana.'),
-            _buildTipItem('🥛 Lácteos en Carulla',
-                'Aprovecha el 2x1 en marcas seleccionadas.'),
             _buildTipItem(
-                '🥩 Proteínas en Jumbo', 'Mejor calidad-precio detectada hoy.'),
+                AppMessages.buyGrainsAtExito, AppMessages.grainsExitoDesc),
+            _buildTipItem(
+                AppMessages.dairyAtCarulla, AppMessages.dairyCarullaDesc),
+            _buildTipItem(
+                AppMessages.proteinAtJumbo, AppMessages.proteinJumboDesc),
             const SizedBox(height: 24),
             SizedBox(
               width: double.infinity,
@@ -94,7 +95,7 @@ class AiBanner extends StatelessWidget {
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12)),
                 ),
-                child: const Text('Entendido',
+                child: const Text(AppMessages.understoodAction,
                     style: TextStyle(
                         color: Colors.black, fontWeight: FontWeight.bold)),
               ),

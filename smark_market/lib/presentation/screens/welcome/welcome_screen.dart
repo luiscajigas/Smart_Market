@@ -104,7 +104,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                           ),
                           const SizedBox(height: 8),
                           const Text(
-                            'Tu comparador inteligente de precios.',
+                            'Your intelligent price comparator.',
                             style: TextStyle(
                               color: AppColors.textSecondary,
                               fontSize: 16,
@@ -113,7 +113,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                           ),
                           const SizedBox(height: 48),
                           SmButton(
-                            label: 'Crear cuenta',
+                            label: 'Create account',
                             onPressed: () => Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -122,7 +122,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                           ),
                           const SizedBox(height: 12),
                           SmButton(
-                            label: 'Iniciar sesión',
+                            label: 'Sign in',
                             outlined: true,
                             onPressed: () => Navigator.push(
                               context,
@@ -133,7 +133,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                           const SizedBox(height: 32),
                           Center(
                             child: Text(
-                              'Al continuar, aceptas nuestros Términos y Condiciones',
+                              'By continuing, you agree to our Terms and Conditions',
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                   color: AppColors.textHint, fontSize: 11),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_messages.dart';
 import '../../../data/models/mock_data.dart';
 import '../../../data/providers/auth_provider.dart';
 import '../../../data/providers/product_provider.dart';
@@ -22,7 +23,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    // Cargar productos destacados al iniciar
+    // Load featured products on start
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<ProductProvider>().fetchFeaturedProducts();
     });
@@ -34,9 +35,14 @@ class _HomeScreenState extends State<HomeScreen> {
     final productProvider = context.watch<ProductProvider>();
 
     final metadata = authProvider.currentUser?.userMetadata;
-    final nombre = metadata?['full_name'] ?? 'Usuario';
+    final name = metadata?['full_name'] ?? 'User';
 
-    final products = productProvider.groupedProducts.take(4).toList();
+    // Use favorite products if they exist, otherwise featured ones
+    final displayProducts = productProvider.favoriteProducts.isNotEmpty
+        ? productProvider.favoriteProducts.take(4).toList()
+        : productProvider.groupedProducts.take(4).toList();
+
+    final isUsingFavorites = productProvider.favoriteProducts.isNotEmpty;
 
     return Scaffold(
       body: CustomScrollView(
@@ -57,11 +63,11 @@ class _HomeScreenState extends State<HomeScreen> {
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Hola, $nombre',
+                        Text('${AppMessages.hiGreeting}$name',
                             style: const TextStyle(
                                 color: AppColors.textSecondary, fontSize: 14)),
                         const SizedBox(height: 2),
-                        const Text('¿Qué compramos hoy?',
+                        const Text(AppMessages.buyTodayPrompt,
                             style: TextStyle(
                                 color: AppColors.textPrimary,
                                 fontSize: 22,
@@ -98,7 +104,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   // Search bar
                   GestureDetector(
                     onTap: () {
-                      // Redirigir a la pestaña de comparar (índice 1 en MainShell)
+                      // Redirect to compare tab (index 1 in MainShell)
                       final state =
                           context.findAncestorStateOfType<MainShellState>();
                       if (state != null) {
@@ -118,7 +124,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           Icon(Icons.search_rounded,
                               color: AppColors.textHint, size: 20),
                           SizedBox(width: 10),
-                          Text('Buscar productos para comparar...',
+                          const Text(AppMessages.searchProductsHint,
                               style: TextStyle(
                                   color: AppColors.textHint, fontSize: 14)),
                         ],
@@ -134,7 +140,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(height: 24),
 
                   // Supermarkets
-                  const Text('Supermercados cercanos',
+                  const Text(AppMessages.nearbySupermarkets,
                       style: TextStyle(
                           color: AppColors.textPrimary,
                           fontSize: 16,
@@ -199,8 +205,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Productos destacados', //
-                          style: TextStyle(
+                      Text(
+                          isUsingFavorites
+                              ? AppMessages.yourFavorites
+                              : AppMessages.featuredProducts,
+                          style: const TextStyle(
                               color: AppColors.textPrimary,
                               fontSize: 16,
                               fontWeight: FontWeight.w800)),
@@ -209,7 +218,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             context,
                             MaterialPageRoute(
                                 builder: (_) => const ProductListScreen())),
-                        child: const Text('Ver todos',
+                        child: const Text(AppMessages.seeAllAction,
                             style: TextStyle(
                                 color: AppColors.primary,
                                 fontSize: 14,
@@ -229,8 +238,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Center(child: CircularProgressIndicator()))
                 : SliverGrid(
                     delegate: SliverChildBuilderDelegate(
-                      (_, i) => ProductCard(product: products[i]),
-                      childCount: products.length,
+                      (_, i) => ProductCard(product: displayProducts[i]),
+                      childCount: displayProducts.length,
                     ),
                     gridDelegate:
                         const SliverGridDelegateWithFixedCrossAxisCount(
@@ -252,7 +261,7 @@ class _HomeScreenState extends State<HomeScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.cardBackground,
-        title: const Text('Notificaciones',
+        title: const Text(AppMessages.notificationsTitle,
             style: TextStyle(color: AppColors.textPrimary)),
         content: const Column(
           mainAxisSize: MainAxisSize.min,
@@ -260,16 +269,16 @@ class _HomeScreenState extends State<HomeScreen> {
             ListTile(
               leading: Icon(Icons.notifications_active_outlined,
                   color: AppColors.primary),
-              title: Text('Oferta en Arroz',
+              title: Text(AppMessages.riceOfferTitle,
                   style: TextStyle(color: AppColors.textPrimary)),
-              subtitle: Text('Bajo un 10% en Éxito hoy.',
+              subtitle: Text(AppMessages.riceOfferDesc,
                   style: TextStyle(color: AppColors.textSecondary)),
             ),
             ListTile(
               leading: Icon(Icons.check_circle_outline, color: Colors.green),
-              title: Text('Búsqueda completada',
+              title: Text(AppMessages.searchCompletedTitle,
                   style: TextStyle(color: AppColors.textPrimary)),
-              subtitle: Text('Encontramos 5 nuevas ofertas.',
+              subtitle: Text(AppMessages.searchCompletedDesc,
                   style: TextStyle(color: AppColors.textSecondary)),
             ),
           ],
@@ -277,7 +286,7 @@ class _HomeScreenState extends State<HomeScreen> {
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cerrar')),
+              child: const Text(AppMessages.closeAction)),
         ],
       ),
     );

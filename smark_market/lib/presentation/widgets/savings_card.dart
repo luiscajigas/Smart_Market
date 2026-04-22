@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/constants/app_messages.dart';
 import '../../data/models/mock_data.dart';
 
 class SavingsCard extends StatelessWidget {
@@ -30,17 +31,24 @@ class SavingsCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Presupuesto del mes',
-                    style: TextStyle(color: Colors.black54, fontSize: 13, fontWeight: FontWeight.w500)),
+                const Text(AppMessages.monthlyBudgetTitle,
+                    style: TextStyle(
+                        color: Colors.black54,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500)),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: Colors.black.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    'Ahorro: \$${MockData.monthlySaved.toStringAsFixed(0)}',
-                    style: const TextStyle(color: Colors.black, fontSize: 11, fontWeight: FontWeight.w700),
+                    '${AppMessages.savingsTab}: \$${MockData.monthlySaved.toStringAsFixed(0)}',
+                    style: const TextStyle(
+                        color: Colors.black,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700),
                   ),
                 ),
               ],
@@ -49,12 +57,14 @@ class SavingsCard extends StatelessWidget {
             Text(
               '\$${MockData.monthlySpent.toStringAsFixed(0)}',
               style: const TextStyle(
-                color: Colors.black, fontSize: 32,
-                fontWeight: FontWeight.w800, letterSpacing: -1,
+                color: Colors.black,
+                fontSize: 32,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -1,
               ),
             ),
             Text(
-              'de \$${MockData.monthlyBudget.toStringAsFixed(0)} presupuestado',
+              '${AppMessages.budgetSpent} ${AppMessages.ofBudgetPrefix}\$${MockData.monthlyBudget.toStringAsFixed(0)}${AppMessages.ofBudgetSuffix}',
               style: const TextStyle(color: Colors.black54, fontSize: 13),
             ),
             const SizedBox(height: 16),
@@ -68,7 +78,7 @@ class SavingsCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 6),
-            Text('$pct% utilizado',
+            Text('$pct${AppMessages.usedPercentageSuffix}',
                 style: const TextStyle(color: Colors.black54, fontSize: 11)),
           ],
         ),
@@ -77,41 +87,46 @@ class SavingsCard extends StatelessWidget {
   }
 
   void _showUpdateBudgetDialog(BuildContext context) {
-    final controller = TextEditingController(text: MockData.monthlyBudget.toStringAsFixed(0));
+    final controller =
+        TextEditingController(text: MockData.monthlyBudget.toStringAsFixed(0));
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.cardBackground,
-        title: const Text('Editar Presupuesto', style: TextStyle(color: AppColors.textPrimary)),
+        title: const Text(AppMessages.editBudgetTitle,
+            style: TextStyle(color: AppColors.textPrimary)),
         content: TextField(
           controller: controller,
           keyboardType: TextInputType.number,
           style: const TextStyle(color: AppColors.textPrimary),
           decoration: const InputDecoration(
-            labelText: 'Presupuesto Mensual',
+            labelText: AppMessages.monthlyBudgetTitle,
             labelStyle: TextStyle(color: AppColors.textHint),
-            enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.primary)),
+            enabledBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: AppColors.primary)),
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar', style: TextStyle(color: AppColors.textSecondary)),
+            child: const Text(AppMessages.cancelAction,
+                style: TextStyle(color: AppColors.textSecondary)),
           ),
           ElevatedButton(
             onPressed: () {
-              // En un caso real, esto actualizaría el estado o la DB
+              // In a real case, this would update state or DB
               final newVal = double.tryParse(controller.text);
               if (newVal != null) {
-                // Simulamos actualización
+                // Simulate update
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Presupuesto actualizado (Simulación)')),
+                  const SnackBar(content: Text(AppMessages.saveBudgetSuccess)),
                 );
               }
             },
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
-            child: const Text('Guardar', style: TextStyle(color: Colors.black)),
+            child: const Text(AppMessages.saveAction,
+                style: TextStyle(color: Colors.black)),
           ),
         ],
       ),

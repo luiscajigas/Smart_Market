@@ -3,7 +3,9 @@ class Product {
   final String name;
   final String category;
   final String imageEmoji;
-  final String? imageUrl; // Nuevo campo para imagen real
+  final String? imageUrl; // New field for real image
+  final String? buyUrl; // Main purchase link (best price)
+  final Map<String, String> urls; // All purchase links per supermarket
   final Map<String, double> prices;
   final String unit;
 
@@ -13,6 +15,8 @@ class Product {
     required this.category,
     required this.imageEmoji,
     this.imageUrl,
+    this.buyUrl,
+    this.urls = const {},
     required this.prices,
     required this.unit,
   });

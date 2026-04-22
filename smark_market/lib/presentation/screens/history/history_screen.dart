@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_messages.dart';
 import '../../../data/providers/favorites_provider.dart';
-import '../../../data/models/search_result_model.dart';
+import '../../../data/providers/history_provider.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
@@ -15,43 +15,22 @@ class HistoryScreen extends StatefulWidget {
 class _HistoryScreenState extends State<HistoryScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  bool _isLoading = true;
-  List<Map<String, dynamic>> _history = [];
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    _fetchHistory();
+
+    // Load history when screen is initialized
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<HistoryProvider>().loadHistory();
+    });
   }
 
   @override
   void dispose() {
     _tabController.dispose();
     super.dispose();
-  }
-
-  Future<void> _fetchHistory() async {
-    try {
-      final supabase = Supabase.instance.client;
-      final response = await supabase
-          .from('results')
-          .select()
-          .order('created_at', ascending: false)
-          .limit(20);
-
-      if (mounted) {
-        setState(() {
-          _history = List<Map<String, dynamic>>.from(response);
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
-      print('Error cargando historial: $e');
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
-    }
   }
 
   @override
@@ -66,7 +45,7 @@ class _HistoryScreenState extends State<HistoryScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Historial y Favoritos',
+                  const Text(AppMessages.historyTitle,
                       style: TextStyle(
                           color: AppColors.textPrimary,
                           fontSize: 24,
@@ -80,8 +59,8 @@ class _HistoryScreenState extends State<HistoryScreen>
                     unselectedLabelColor: AppColors.textSecondary,
                     indicatorSize: TabBarIndicatorSize.label,
                     tabs: const [
-                      Tab(text: 'Historial'),
-                      Tab(text: 'Favoritos'),
+                      Tab(text: AppMessages.historyTab),
+                      Tab(text: AppMessages.favoritesTab),
                     ],
                   ),
                 ],
@@ -103,36 +82,96 @@ class _HistoryScreenState extends State<HistoryScreen>
   }
 
   Widget _buildHistoryTab() {
-    if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-    if (_history.isEmpty) {
-      return const Center(
-          child: Text('No hay búsquedas recientes',
-              style: TextStyle(color: AppColors.textSecondary)));
-    }
-    return ListView.builder(
-      padding: const EdgeInsets.all(20),
-      itemCount: _history.length,
-      itemBuilder: (context, index) {
-        final item = _history[index];
-        return Card(
-          color: AppColors.cardBackground,
-          margin: const EdgeInsets.only(bottom: 12),
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14),
-              side: const BorderSide(color: AppColors.border)),
-          child: ListTile(
-            leading:
-                const Icon(Icons.history_rounded, color: AppColors.textHint),
-            title: Text(item['name'] ?? 'Producto',
-                style: const TextStyle(
-                    color: AppColors.textPrimary, fontWeight: FontWeight.bold)),
-            subtitle: Text('\$${item['price']} COP',
-                style: const TextStyle(color: AppColors.primary)),
-            trailing: Text(item['source']?.toString().toUpperCase() ?? '',
-                style:
-                    const TextStyle(color: AppColors.textHint, fontSize: 10)),
+    return Consumer<HistoryProvider>(
+      builder: (context, provider, _) {
+        if (provider.isLoading) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (provider.history.isEmpty) {
+          return const Center(
+              child: Text(AppMessages.noHistory,
+                  style: TextStyle(color: AppColors.textSecondary)));
+        }
+
+        return RefreshIndicator(
+          onRefresh: () => provider.loadHistory(),
+          child: ListView.builder(
+            padding: const EdgeInsets.all(20),
+            itemCount: provider.history.length,
+            itemBuilder: (context, index) {
+              final item = provider.history[index];
+              final isPurchase = item['source'] == 'purchase';
+
+              return Card(
+                color: AppColors.cardBackground,
+                margin: const EdgeInsets.only(bottom: 12),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    side: BorderSide(
+                      color: isPurchase
+                          ? AppColors.primary.withOpacity(0.3)
+                          : AppColors.border,
+                      width: isPurchase ? 1.5 : 1,
+                    )),
+                child: ListTile(
+                  leading: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color:
+                          (isPurchase ? AppColors.primary : AppColors.textHint)
+                              .withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      isPurchase
+                          ? Icons.shopping_cart_checkout_rounded
+                          : Icons.history_rounded,
+                      color:
+                          isPurchase ? AppColors.primary : AppColors.textHint,
+                      size: 20,
+                    ),
+                  ),
+                  title: Text(item['name'] ?? AppMessages.productLabel,
+                      style: const TextStyle(
+                          color: AppColors.textPrimary,
+                          fontWeight: FontWeight.bold)),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (item['price'] != null && item['price'] > 0)
+                        Text('\$${item['price']} COP',
+                            style: const TextStyle(
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.w600)),
+                      Text(
+                          isPurchase
+                              ? AppMessages.purchaseAccess
+                              : AppMessages.searchPerformed,
+                          style: const TextStyle(
+                              color: AppColors.textSecondary, fontSize: 11)),
+                    ],
+                  ),
+                  trailing: isPurchase
+                      ? Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Text(AppMessages.purchaseLabel,
+                              style: TextStyle(
+                                  color: AppColors.primary,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold)),
+                        )
+                      : Text(item['category'] ?? '',
+                          style: const TextStyle(
+                              color: AppColors.textHint, fontSize: 10)),
+                ),
+              );
+            },
           ),
         );
       },
@@ -147,7 +186,7 @@ class _HistoryScreenState extends State<HistoryScreen>
         }
         if (favs.favorites.isEmpty) {
           return const Center(
-              child: Text('No tienes productos favoritos',
+              child: Text(AppMessages.noFavorites,
                   style: TextStyle(color: AppColors.textSecondary)));
         }
         return ListView.builder(

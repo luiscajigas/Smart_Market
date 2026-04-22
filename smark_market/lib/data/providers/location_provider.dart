@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'dart:math' show cos, sqrt, asin;
+import '../../../core/constants/app_messages.dart';
 
 class SupermarketLocation {
   final String name;
@@ -27,7 +28,7 @@ class LocationProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
 
-  // Lista de supermercados (Ejemplos en Bogotá, se pueden añadir más)
+  // List of supermarkets (Examples in Bogotá, more can be added)
   final List<SupermarketLocation> _supermarkets = [
     SupermarketLocation(
       name: 'Alkosto 68',
@@ -52,6 +53,7 @@ class LocationProvider extends ChangeNotifier {
     ),
   ];
 
+  /// Determine the current position of the device
   Future<void> determinePosition() async {
     _isLoading = true;
     _error = null;
@@ -63,7 +65,7 @@ class LocationProvider extends ChangeNotifier {
 
       serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
-        _error = 'El servicio de ubicación está desactivado.';
+        _error = AppMessages.locationDisabled;
         _isLoading = false;
         notifyListeners();
         return;
@@ -73,7 +75,7 @@ class LocationProvider extends ChangeNotifier {
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied) {
-          _error = 'Permiso de ubicación denegado.';
+          _error = AppMessages.locationDenied;
           _isLoading = false;
           notifyListeners();
           return;
@@ -81,7 +83,7 @@ class LocationProvider extends ChangeNotifier {
       }
 
       if (permission == LocationPermission.deniedForever) {
-        _error = 'Permisos denegados permanentemente.';
+        _error = AppMessages.locationPermanentlyDenied;
         _isLoading = false;
         notifyListeners();
         return;
@@ -89,14 +91,14 @@ class LocationProvider extends ChangeNotifier {
 
       _currentPosition = await Geolocator.getCurrentPosition();
     } catch (e) {
-      _error = 'Error al obtener ubicación: $e';
+      _error = '${AppMessages.locationError}$e';
     }
 
     _isLoading = false;
     notifyListeners();
   }
 
-  // Calcular distancia Haversine
+  /// Calculate Haversine distance
   double _calculateDistance(lat1, lon1, lat2, lon2) {
     var p = 0.017453292519943295;
     var c = cos;

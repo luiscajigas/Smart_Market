@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_messages.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../../data/providers/auth_provider.dart';
 import '../../../data/providers/settings_provider.dart';
@@ -42,14 +43,14 @@ class ProfileScreen extends StatelessWidget {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.cardBackground,
-        title: const Text('Presupuesto Mensual',
+        title: const Text(AppMessages.monthlyBudgetTitle,
             style: TextStyle(color: AppColors.textPrimary)),
         content: TextField(
           controller: controller,
           keyboardType: TextInputType.number,
           style: const TextStyle(color: AppColors.textPrimary),
           decoration: const InputDecoration(
-            labelText: 'Monto (COP)',
+            labelText: AppMessages.amountLabel,
             labelStyle: TextStyle(color: AppColors.textHint),
             enabledBorder: UnderlineInputBorder(
                 borderSide: BorderSide(color: AppColors.border)),
@@ -60,7 +61,7 @@ class ProfileScreen extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar',
+            child: const Text(AppMessages.cancelAction,
                 style: TextStyle(color: AppColors.textHint)),
           ),
           ElevatedButton(
@@ -72,7 +73,8 @@ class ProfileScreen extends StatelessWidget {
               Navigator.pop(context);
             },
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
-            child: const Text('Guardar', style: TextStyle(color: Colors.black)),
+            child: const Text(AppMessages.saveAction,
+                style: TextStyle(color: Colors.black)),
           ),
         ],
       ),
@@ -85,9 +87,9 @@ class ProfileScreen extends StatelessWidget {
     final settingsProvider = context.watch<SettingsProvider>();
     final metadata = authProvider.currentUser?.userMetadata;
 
-    final nombre = metadata?['full_name'] ?? 'Usuario';
+    final name = metadata?['full_name'] ?? 'User';
     final email = authProvider.currentUser?.email ?? '';
-    final initial = nombre.isNotEmpty ? nombre[0].toUpperCase() : 'U';
+    final initial = name.isNotEmpty ? name[0].toUpperCase() : 'U';
 
     return Scaffold(
       body: SafeArea(
@@ -117,7 +119,7 @@ class ProfileScreen extends StatelessWidget {
                             fontWeight: FontWeight.w800))),
               ),
               const SizedBox(height: 14),
-              Text(nombre,
+              Text(name,
                   style: const TextStyle(
                       color: AppColors.textPrimary,
                       fontSize: 22,
@@ -138,18 +140,18 @@ class ProfileScreen extends StatelessWidget {
                   children: [
                     _StatItem(
                       value: '6',
-                      label: 'Compras',
+                      label: AppMessages.purchasesLabel,
                       onTap: () => _navigateToTab(context, 3),
                     ),
                     _StatItem(
                       value:
                           '\$${(settingsProvider.monthlyBudget / 1000).toStringAsFixed(0)}K',
-                      label: 'Meta',
+                      label: AppMessages.goalLabel,
                       onTap: () => _showBudgetDialog(context),
                     ),
                     _StatItem(
                       value: '3',
-                      label: 'Recomend.',
+                      label: AppMessages.recommendationsLabel,
                       onTap: () => _navigateToTab(context, 2),
                     ),
                   ],
@@ -159,18 +161,18 @@ class ProfileScreen extends StatelessWidget {
               ...[
                 (
                   Icons.notifications_outlined,
-                  'Notificaciones',
-                  'Alertas de precios y predicciones',
+                  AppMessages.notificationsLabel,
+                  AppMessages.notificationsDesc,
                   () => _navigateToPlaceholder(
                       context,
-                      'Notificaciones',
-                      'Recibe alertas personalizadas sobre cambios de precios y ofertas.',
+                      AppMessages.notificationsLabel,
+                      'Receive personalized alerts about price changes and offers.',
                       Icons.notifications_outlined)
                 ),
                 (
                   Icons.location_on_outlined,
-                  'Ubicación',
-                  'Supermercados cercanos',
+                  AppMessages.locationLabel,
+                  AppMessages.locationDesc,
                   () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -178,38 +180,38 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 (
                   Icons.account_balance_wallet_outlined,
-                  'Presupuesto',
-                  'Gestiona tu gasto mensual',
+                  AppMessages.budgetLabel,
+                  AppMessages.budgetDesc,
                   () => _showBudgetDialog(context)
                 ),
                 (
                   Icons.bar_chart_rounded,
-                  'Estadísticas',
-                  'Análisis detallado de consumo',
+                  AppMessages.statisticsLabel,
+                  AppMessages.statisticsDesc,
                   () => _navigateToPlaceholder(
                       context,
-                      'Estadísticas',
-                      'Visualiza tus hábitos de consumo con gráficos interactivos.',
+                      AppMessages.statisticsLabel,
+                      'Visualize your consumption habits with interactive charts.',
                       Icons.bar_chart_rounded)
                 ),
                 (
                   Icons.shield_outlined,
-                  'Privacidad',
-                  'Configura tus datos',
+                  AppMessages.privacyLabel,
+                  AppMessages.privacyDesc,
                   () => _navigateToPlaceholder(
                       context,
-                      'Privacidad',
-                      'Gestiona la seguridad y privacidad de tu información.',
+                      AppMessages.privacyLabel,
+                      'Manage the security and privacy of your information.',
                       Icons.shield_outlined)
                 ),
                 (
                   Icons.help_outline_rounded,
-                  'Ayuda',
-                  'Soporte y preguntas frecuentes',
+                  AppMessages.helpLabel,
+                  AppMessages.helpDesc,
                   () => _navigateToPlaceholder(
                       context,
-                      'Ayuda',
-                      'Obtén respuestas a tus dudas y contacta con soporte.',
+                      AppMessages.helpLabel,
+                      'Get answers to your questions and contact support.',
                       Icons.help_outline_rounded)
                 ),
               ].map((item) => Container(
@@ -258,7 +260,7 @@ class ProfileScreen extends StatelessWidget {
                         (_) => false);
                   },
                   icon: const Icon(Icons.logout_rounded, size: 18),
-                  label: const Text('Cerrar sesión'),
+                  label: const Text(AppMessages.signOutAction),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppColors.error,
                     side: const BorderSide(color: AppColors.error),

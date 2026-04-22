@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_messages.dart';
 import '../../../data/models/product_model.dart';
 import '../../../data/providers/product_provider.dart';
 import '../../../data/providers/location_provider.dart';
@@ -32,20 +33,20 @@ class _AiScreenState extends State<AiScreen> {
     final products = productProvider.groupedProducts;
     final nearbySupermarkets = locationProvider.getNearbySupermarkets();
 
-    // Lógica real de ahorro basada en presupuesto
-    final totalSavingsProyected =
+    // Real saving logic based on budget
+    final totalSavingsProjected =
         products.fold(0.0, (sum, p) => sum + p.savings);
     final budgetPercent = settingsProvider.monthlyBudget > 0
-        ? (totalSavingsProyected / settingsProvider.monthlyBudget)
+        ? (totalSavingsProjected / settingsProvider.monthlyBudget)
             .clamp(0.0, 1.0)
         : 0.0;
 
     final recommendations = products
         .where((p) => p.prices.length > 1)
         .map((p) => AiRecommendation(
-              title: 'Ahorra en ${p.name}',
+              title: 'Save on ${p.name}',
               description:
-                  'El mejor precio está en ${p.bestSupermarket}. Ahorras \$${p.savings.toStringAsFixed(0)} comparado con el más caro.',
+                  'Best price is at ${p.bestSupermarket}. You save \$${p.savings.toStringAsFixed(0)} compared to the most expensive.',
               type: 'saving',
               savingAmount: p.savings,
               icon: '💰',
@@ -74,16 +75,16 @@ class _AiScreenState extends State<AiScreen> {
                         child: Text('🤖', style: TextStyle(fontSize: 20))),
                   ),
                   const SizedBox(width: 12),
-                  const Column(
+                  Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Smart IA',
+                      const Text(AppMessages.aiTitle,
                           style: TextStyle(
                               color: AppColors.textPrimary,
                               fontSize: 22,
                               fontWeight: FontWeight.w800,
                               letterSpacing: -0.5)),
-                      Text('Motor de recomendación inteligente',
+                      const Text(AppMessages.aiSubtitle,
                           style: TextStyle(
                               color: AppColors.textSecondary, fontSize: 13)),
                     ],
@@ -95,25 +96,25 @@ class _AiScreenState extends State<AiScreen> {
               Row(
                 children: [
                   _StatChip(
-                      label: 'Ahorro proyectado',
-                      value: '\$${totalSavingsProyected.toStringAsFixed(0)}',
+                      label: AppMessages.projectedSavings,
+                      value: '\$${totalSavingsProjected.toStringAsFixed(0)}',
                       icon: '💰'),
                   const SizedBox(width: 10),
                   _StatChip(
-                      label: 'Impacto presupuesto',
+                      label: AppMessages.budgetImpact,
                       value: '${(budgetPercent * 100).toStringAsFixed(1)}%',
                       icon: '🔮'),
                 ],
               ),
               const SizedBox(height: 24),
 
-              const Text('Recomendaciones activas',
+              const Text(AppMessages.activeRecommendations,
                   style: TextStyle(
                       color: AppColors.textPrimary,
                       fontSize: 16,
                       fontWeight: FontWeight.w700)),
               const SizedBox(height: 4),
-              const Text('Basadas en tus patrones de compra',
+              const Text(AppMessages.basedOnPatterns,
                   style:
                       TextStyle(color: AppColors.textSecondary, fontSize: 13)),
               const SizedBox(height: 14),
@@ -122,7 +123,7 @@ class _AiScreenState extends State<AiScreen> {
                 const Center(
                   child: Padding(
                     padding: EdgeInsets.symmetric(vertical: 20),
-                    child: Text('No hay recomendaciones suficientes todavía',
+                    child: Text(AppMessages.notEnoughRecommendations,
                         style: TextStyle(color: AppColors.textSecondary)),
                   ),
                 )
@@ -131,7 +132,7 @@ class _AiScreenState extends State<AiScreen> {
 
               const SizedBox(height: 24),
 
-              // Análisis de consumo real
+              // Real consumption analysis
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
@@ -146,7 +147,7 @@ class _AiScreenState extends State<AiScreen> {
                       children: [
                         Text('📊', style: TextStyle(fontSize: 20)),
                         SizedBox(width: 8),
-                        Text('Análisis de consumo',
+                        Text(AppMessages.consumptionAnalysis,
                             style: TextStyle(
                                 color: AppColors.textPrimary,
                                 fontSize: 15,
@@ -155,7 +156,7 @@ class _AiScreenState extends State<AiScreen> {
                     ),
                     const SizedBox(height: 16),
                     if (products.isEmpty)
-                      const Text('Buscando productos para analizar...',
+                      const Text(AppMessages.searchingToAnalyze,
                           style: TextStyle(color: AppColors.textHint))
                     else
                       ...products.take(4).map((p) => Padding(
@@ -186,7 +187,7 @@ class _AiScreenState extends State<AiScreen> {
                                                         FontWeight.w500)),
                                           ),
                                           const SizedBox(width: 8),
-                                          const Text('Analizado',
+                                          const Text('Analyzed',
                                               style: TextStyle(
                                                   color: AppColors.textHint,
                                                   fontSize: 11)),
@@ -215,7 +216,7 @@ class _AiScreenState extends State<AiScreen> {
               ),
               const SizedBox(height: 24),
 
-              // Ubicación Real
+              // Real Location
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
@@ -227,8 +228,8 @@ class _AiScreenState extends State<AiScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('📍 Supermercados cercanos',
-                        style: TextStyle(
+                    Text('📍 ${AppMessages.nearbySupermarkets}',
+                        style: const TextStyle(
                             color: AppColors.textPrimary,
                             fontSize: 15,
                             fontWeight: FontWeight.w700)),
@@ -242,7 +243,7 @@ class _AiScreenState extends State<AiScreen> {
                           style:
                               const TextStyle(color: Colors.red, fontSize: 12))
                     else if (nearbySupermarkets.isEmpty)
-                      const Text('No se detectaron supermercados cerca.',
+                      const Text(AppMessages.noResults,
                           style: TextStyle(
                               color: AppColors.textHint, fontSize: 12))
                     else
@@ -299,7 +300,7 @@ class _AiScreenState extends State<AiScreen> {
                     const SizedBox(height: 8),
                     if (nearbySupermarkets.isNotEmpty)
                       Text(
-                          '⚡ Recomendación: ${(nearbySupermarkets.first['supermarket'] as SupermarketLocation).name} es el más cercano a tu ubicación actual.',
+                          '${AppMessages.nearestSupermarketRecommendation}${(nearbySupermarkets.first['supermarket'] as SupermarketLocation).name}${AppMessages.nearestSupermarketSuffix}',
                           style: const TextStyle(
                               color: AppColors.textSecondary,
                               fontSize: 12,

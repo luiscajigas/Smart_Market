@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_messages.dart';
 
 class FeaturePlaceholderScreen extends StatelessWidget {
   final String title;
@@ -67,7 +68,7 @@ class FeaturePlaceholderScreen extends StatelessWidget {
               ),
               const SizedBox(height: 48),
               const Text(
-                'Próximamente disponible',
+                AppMessages.comingSoon,
                 style: TextStyle(
                   color: AppColors.primary,
                   fontSize: 14,
