@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_messages.dart';
+import '../../data/providers/settings_provider.dart';
 
 class AiBanner extends StatelessWidget {
   const AiBanner({super.key});
 
   @override
   Widget build(BuildContext context) {
+    context.watch<SettingsProvider>();
+    final savingsText =
+        '${AppMessages.saveAmountMonthPrefix}\$20${AppMessages.saveAmountMonthSuffix}';
+
     return GestureDetector(
       onTap: () => _showAiRecommendations(context),
       child: Container(
@@ -31,23 +37,19 @@ class AiBanner extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 14),
-            const Expanded(
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(AppMessages.aiRecommends,
-                      style: TextStyle(
-                          color: AppColors.primary,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600)),
+                  Text(AppMessages.aiRecommends,
+                      style: const TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800)),
                   const SizedBox(height: 2),
-                  Text(
-                    '${AppMessages.saveAmountMonthPrefix}\$22.000${AppMessages.saveAmountMonthSuffix}',
-                    style: const TextStyle(
-                        color: AppColors.textPrimary,
-                        fontSize: 13,
-                        height: 1.4),
-                  ),
+                  Text(savingsText,
+                      style: const TextStyle(
+                          color: AppColors.textSecondary, fontSize: 13)),
                 ],
               ),
             ),
@@ -72,8 +74,8 @@ class AiBanner extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(AppMessages.aiRecommendationsTitle,
-                style: TextStyle(
+            Text(AppMessages.aiRecommendationsTitle,
+                style: const TextStyle(
                     color: AppColors.textPrimary,
                     fontSize: 20,
                     fontWeight: FontWeight.w800)),
@@ -95,8 +97,8 @@ class AiBanner extends StatelessWidget {
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12)),
                 ),
-                child: const Text(AppMessages.understoodAction,
-                    style: TextStyle(
+                child: Text(AppMessages.understoodAction,
+                    style: const TextStyle(
                         color: Colors.black, fontWeight: FontWeight.bold)),
               ),
             ),

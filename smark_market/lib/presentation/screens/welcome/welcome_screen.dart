@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_messages.dart';
+import '../../../data/providers/settings_provider.dart';
 import '../auth/login_screen.dart';
 import '../auth/register_screen.dart';
 import '../../widgets/logo_widget.dart';
@@ -48,6 +51,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
 
   @override
   Widget build(BuildContext context) {
+    context.watch<SettingsProvider>();
     return Scaffold(
       body: Stack(
         children: [
@@ -103,9 +107,9 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                             ),
                           ),
                           const SizedBox(height: 8),
-                          const Text(
-                            'Your intelligent price comparator.',
-                            style: TextStyle(
+                          Text(
+                            AppMessages.welcomeTagline,
+                            style: const TextStyle(
                               color: AppColors.textSecondary,
                               fontSize: 16,
                               height: 1.6,
@@ -113,7 +117,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                           ),
                           const SizedBox(height: 48),
                           SmButton(
-                            label: 'Create account',
+                            label: AppMessages.signUpAction,
                             onPressed: () => Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -122,7 +126,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                           ),
                           const SizedBox(height: 12),
                           SmButton(
-                            label: 'Sign in',
+                            label: AppMessages.signInAction,
                             outlined: true,
                             onPressed: () => Navigator.push(
                               context,
@@ -133,7 +137,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                           const SizedBox(height: 32),
                           Center(
                             child: Text(
-                              'By continuing, you agree to our Terms and Conditions',
+                              AppMessages.termsAndConditionsAgreement,
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                   color: AppColors.textHint, fontSize: 11),

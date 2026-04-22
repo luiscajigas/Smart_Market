@@ -4,6 +4,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_messages.dart';
 import '../../../data/providers/favorites_provider.dart';
 import '../../../data/providers/history_provider.dart';
+import '../../../data/providers/settings_provider.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
@@ -35,6 +36,7 @@ class _HistoryScreenState extends State<HistoryScreen>
 
   @override
   Widget build(BuildContext context) {
+    context.watch<SettingsProvider>();
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -45,12 +47,15 @@ class _HistoryScreenState extends State<HistoryScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(AppMessages.historyTitle,
-                      style: TextStyle(
+                  Text(AppMessages.historyTitle,
+                      style: const TextStyle(
                           color: AppColors.textPrimary,
                           fontSize: 24,
                           fontWeight: FontWeight.w800,
                           letterSpacing: -0.5)),
+                  Text(AppMessages.historySubtitle,
+                      style: const TextStyle(
+                          color: AppColors.textSecondary, fontSize: 13)),
                   const SizedBox(height: 16),
                   TabBar(
                     controller: _tabController,
@@ -58,7 +63,7 @@ class _HistoryScreenState extends State<HistoryScreen>
                     labelColor: AppColors.primary,
                     unselectedLabelColor: AppColors.textSecondary,
                     indicatorSize: TabBarIndicatorSize.label,
-                    tabs: const [
+                    tabs: [
                       Tab(text: AppMessages.historyTab),
                       Tab(text: AppMessages.favoritesTab),
                     ],
@@ -89,9 +94,9 @@ class _HistoryScreenState extends State<HistoryScreen>
         }
 
         if (provider.history.isEmpty) {
-          return const Center(
+          return Center(
               child: Text(AppMessages.noHistory,
-                  style: TextStyle(color: AppColors.textSecondary)));
+                  style: const TextStyle(color: AppColors.textSecondary)));
         }
 
         return RefreshIndicator(
@@ -110,7 +115,7 @@ class _HistoryScreenState extends State<HistoryScreen>
                     borderRadius: BorderRadius.circular(14),
                     side: BorderSide(
                       color: isPurchase
-                          ? AppColors.primary.withOpacity(0.3)
+                          ? AppColors.primary.withAlpha(77)
                           : AppColors.border,
                       width: isPurchase ? 1.5 : 1,
                     )),
@@ -120,7 +125,7 @@ class _HistoryScreenState extends State<HistoryScreen>
                     decoration: BoxDecoration(
                       color:
                           (isPurchase ? AppColors.primary : AppColors.textHint)
-                              .withOpacity(0.1),
+                              .withAlpha(26),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
@@ -157,11 +162,11 @@ class _HistoryScreenState extends State<HistoryScreen>
                           padding: const EdgeInsets.symmetric(
                               horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
-                            color: AppColors.primary.withOpacity(0.1),
+                            color: AppColors.primary.withAlpha(26),
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: const Text(AppMessages.purchaseLabel,
-                              style: TextStyle(
+                          child: Text(AppMessages.purchaseLabel,
+                              style: const TextStyle(
                                   color: AppColors.primary,
                                   fontSize: 10,
                                   fontWeight: FontWeight.bold)),
@@ -185,9 +190,9 @@ class _HistoryScreenState extends State<HistoryScreen>
           return const Center(child: CircularProgressIndicator());
         }
         if (favs.favorites.isEmpty) {
-          return const Center(
+          return Center(
               child: Text(AppMessages.noFavorites,
-                  style: TextStyle(color: AppColors.textSecondary)));
+                  style: const TextStyle(color: AppColors.textSecondary)));
         }
         return ListView.builder(
           padding: const EdgeInsets.all(20),
@@ -219,33 +224,6 @@ class _HistoryScreenState extends State<HistoryScreen>
           },
         );
       },
-    );
-  }
-}
-
-class _SummaryItem extends StatelessWidget {
-  final String label;
-  final String value;
-  final Color color;
-
-  const _SummaryItem({
-    required this.label,
-    required this.value,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text(label,
-            style:
-                const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
-        const SizedBox(height: 4),
-        Text(value,
-            style: TextStyle(
-                color: color, fontSize: 16, fontWeight: FontWeight.w800)),
-      ],
     );
   }
 }

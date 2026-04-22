@@ -36,7 +36,6 @@ class AuthRepository {
           });
         } catch (e) {
           // If profile fails, user was still created in Auth
-          print('Error creating profile: $e');
         }
 
         return AuthResult(

@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'core/constants/app_constants.dart';
+import 'core/constants/app_messages.dart';
 import 'core/theme/app_theme.dart';
 import 'data/providers/auth_provider.dart';
 import 'data/providers/product_provider.dart';
@@ -55,7 +56,9 @@ class SmartMarketApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authProvider = context.watch<AuthProvider>();
+    final settingsProvider = context.watch<SettingsProvider>();
     final isLoggedIn = authProvider.currentUser != null;
+    AppMessages.currentLanguage = settingsProvider.language;
 
     return MaterialApp(
       title: 'Smart Market',

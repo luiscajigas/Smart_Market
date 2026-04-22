@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_messages.dart';
 import '../../../data/providers/auth_provider.dart';
+import '../../../data/providers/settings_provider.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../widgets/sm_button.dart';
 import '../../widgets/sm_text_field.dart';
@@ -47,6 +48,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<SettingsProvider>();
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -65,9 +67,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 const SizedBox(height: 12),
                 const LogoWidget(size: 48, showText: false),
                 const SizedBox(height: 32),
-                const Text(
+                Text(
                   AppMessages.recoverPasswordTitle,
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: AppColors.textPrimary,
                     fontSize: 32,
                     fontWeight: FontWeight.w800,
@@ -76,10 +78,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
+                Text(
                   AppMessages.enterEmailInstructions,
-                  style:
-                      TextStyle(color: AppColors.textSecondary, fontSize: 15),
+                  style: const TextStyle(
+                      color: AppColors.textSecondary, fontSize: 15),
                 ),
                 const SizedBox(height: 40),
                 SmTextField(
@@ -107,10 +109,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   ),
                 ),
                 const SizedBox(height: 24),
-                const Text(
+                Text(
                   AppMessages.emailExpiryInfo,
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: AppColors.textHint, fontSize: 13),
+                  style:
+                      const TextStyle(color: AppColors.textHint, fontSize: 13),
                 ),
               ],
             ),

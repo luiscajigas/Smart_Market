@@ -39,7 +39,6 @@ class HistoryService {
       final history = List<Map<String, dynamic>>.from(response);
       return HistoryResult(data: history, error: null);
     } catch (e) {
-      debugPrint('Error fetching history: $e');
       return HistoryResult(
         data: [],
         error: AppStates.errorLoadingHistory,
@@ -57,7 +56,6 @@ class HistoryService {
     try {
       final user = _supabaseClient.auth.currentUser;
       if (user == null) {
-        debugPrint('Error: User not authenticated');
         return false;
       }
 
@@ -70,10 +68,8 @@ class HistoryService {
         'created_at': DateTime.now().toIso8601String(),
       });
 
-      debugPrint('History entry recorded: $name ($source)');
       return true;
     } catch (e) {
-      debugPrint('Error recording history entry: $e');
       return false;
     }
   }

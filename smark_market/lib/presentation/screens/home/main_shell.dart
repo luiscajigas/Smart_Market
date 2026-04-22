@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_messages.dart';
 import '../../../data/providers/auth_provider.dart';
+import '../../../data/providers/settings_provider.dart';
 import 'home_screen.dart';
 import '../products/compare_screen.dart';
 import '../ai/ai_screen.dart';
@@ -20,7 +22,10 @@ class MainShellState extends State<MainShell> {
   late final List<Widget> _screens;
 
   void updateIndex(int index) {
-    setState(() => _currentIndex = index);
+    if (_currentIndex != index) {
+      FocusManager.instance.primaryFocus?.unfocus();
+      setState(() => _currentIndex = index);
+    }
   }
 
   @override
@@ -37,54 +42,59 @@ class MainShellState extends State<MainShell> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: IndexedStack(index: _currentIndex, children: _screens),
-      bottomNavigationBar: Container(
-        decoration: const BoxDecoration(
-          color: AppColors.surface,
-          border: Border(top: BorderSide(color: AppColors.border, width: 1)),
-        ),
-        child: SafeArea(
-          child: SizedBox(
-            height: 60,
-            child: Row(
-              children: [
-                _NavItem(
-                    icon: Icons.home_rounded,
-                    label: 'Inicio',
-                    index: 0,
-                    current: _currentIndex,
-                    onTap: (i) => setState(() => _currentIndex = i)),
-                _NavItem(
-                    icon: Icons.compare_arrows_rounded,
-                    label: 'Comparar',
-                    index: 1,
-                    current: _currentIndex,
-                    onTap: (i) => setState(() => _currentIndex = i)),
-                _NavItem(
-                    icon: Icons.auto_awesome_rounded,
-                    label: 'IA',
-                    index: 2,
-                    current: _currentIndex,
-                    onTap: (i) => setState(() => _currentIndex = i),
-                    isAi: true),
-                _NavItem(
-                    icon: Icons.receipt_long_rounded,
-                    label: 'Historial',
-                    index: 3,
-                    current: _currentIndex,
-                    onTap: (i) => setState(() => _currentIndex = i)),
-                _NavItem(
-                    icon: Icons.person_rounded,
-                    label: 'Perfil',
-                    index: 4,
-                    current: _currentIndex,
-                    onTap: (i) => setState(() => _currentIndex = i)),
-              ],
+    return Consumer<SettingsProvider>(
+      builder: (context, settings, child) {
+        return Scaffold(
+          body: IndexedStack(index: _currentIndex, children: _screens),
+          bottomNavigationBar: Container(
+            decoration: const BoxDecoration(
+              color: AppColors.surface,
+              border:
+                  Border(top: BorderSide(color: AppColors.border, width: 1)),
+            ),
+            child: SafeArea(
+              child: SizedBox(
+                height: 60,
+                child: Row(
+                  children: [
+                    _NavItem(
+                        icon: Icons.home_rounded,
+                        label: AppMessages.navHome,
+                        index: 0,
+                        current: _currentIndex,
+                        onTap: updateIndex),
+                    _NavItem(
+                        icon: Icons.compare_arrows_rounded,
+                        label: AppMessages.navCompare,
+                        index: 1,
+                        current: _currentIndex,
+                        onTap: updateIndex),
+                    _NavItem(
+                        icon: Icons.auto_awesome_rounded,
+                        label: AppMessages.navAi,
+                        index: 2,
+                        current: _currentIndex,
+                        onTap: updateIndex,
+                        isAi: true),
+                    _NavItem(
+                        icon: Icons.receipt_long_rounded,
+                        label: AppMessages.navHistory,
+                        index: 3,
+                        current: _currentIndex,
+                        onTap: updateIndex),
+                    _NavItem(
+                        icon: Icons.person_rounded,
+                        label: AppMessages.navProfile,
+                        index: 4,
+                        current: _currentIndex,
+                        onTap: updateIndex),
+                  ],
+                ),
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
@@ -113,6 +123,7 @@ class _NavItem extends StatelessWidget {
     if (isAi) {
       return Expanded(
         child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
           onTap: () => onTap(index),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -145,6 +156,7 @@ class _NavItem extends StatelessWidget {
 
     return Expanded(
       child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
         onTap: () => onTap(index),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

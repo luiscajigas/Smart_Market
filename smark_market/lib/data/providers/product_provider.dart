@@ -11,11 +11,13 @@ import '../../../core/constants/app_states.dart';
 class ProductProvider extends ChangeNotifier {
   late HistoryService _historyService;
   bool _isLoading = false;
+  bool _isFeaturedLoading = false;
   String? _errorMessage;
   List<ProductResult> _products = [];
   SearchResponse? _lastSearch;
 
   bool get isLoading => _isLoading;
+  bool get isFeaturedLoading => _isFeaturedLoading;
   String? get errorMessage => _errorMessage;
   List<ProductResult> get products => _products;
   SearchResponse? get lastSearch => _lastSearch;
@@ -95,11 +97,6 @@ class ProductProvider extends ChangeNotifier {
       _lastSearch = SearchResponse.fromList(response.data!, query);
       _products = _lastSearch!.results;
 
-      // Record this search in history
-      if (_products.isNotEmpty) {
-        _recordSearchPattern(query, _products.first.category);
-      }
-
       if (_products.isEmpty) _setError(AppMessages.noResults);
     } else {
       _setError(response.message);
@@ -136,9 +133,15 @@ class ProductProvider extends ChangeNotifier {
   List<Product> _favoriteProducts = [];
   List<Product> get favoriteProducts => _favoriteProducts;
 
+  void _setFeaturedLoading(bool value) {
+    _isFeaturedLoading = value;
+    notifyListeners();
+  }
+
   /// Fetch featured products based on purchase history
   Future<void> fetchFeaturedProducts() async {
     try {
+      _setFeaturedLoading(true);
       final result = await _historyService.fetchUserHistory(limit: 10);
 
       if (result.isSuccess) {
@@ -163,32 +166,12 @@ class ProductProvider extends ChangeNotifier {
           }
         }
         _favoriteProducts = favs;
-        notifyListeners();
       }
 
-      // If no favorites or as complement, load general featured products
-      if (_favoriteProducts.isEmpty) {
-        _setLoading(true);
-        final searchResponse = await ApiService.searchProducts('arroz');
-        if (searchResponse.success && searchResponse.data != null) {
-          _lastSearch = SearchResponse.fromList(searchResponse.data!, 'arroz');
-          _products = _lastSearch!.results;
-        }
-        _setLoading(false);
-      }
+      // If no favorites, we don't load default products as per user request
+      _setFeaturedLoading(false);
     } catch (e) {
-      debugPrint('Error loading featured products: $e');
-      _setLoading(false);
+      _setFeaturedLoading(false);
     }
-  }
-
-  /// Record search pattern in history
-  Future<void> _recordSearchPattern(String query, String? category) async {
-    await _historyService.recordEntry(
-      name: query,
-      price: 0,
-      category: category ?? 'General',
-      source: AppStates.sourceSearch,
-    );
   }
 }

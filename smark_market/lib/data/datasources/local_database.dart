@@ -1,7 +1,5 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
-import 'package:flutter/foundation.dart';
-
 class LocalDatabase {
   static final LocalDatabase instance = LocalDatabase._init();
   static Database? _database;
@@ -17,8 +15,6 @@ class LocalDatabase {
   Future<Database> _initDB(String filePath) async {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, filePath);
-
-    debugPrint('--- DATABASE PATH: $path ---');
 
     return await openDatabase(
       path,

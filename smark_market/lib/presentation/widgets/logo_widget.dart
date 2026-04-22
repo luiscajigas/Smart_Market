@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_messages.dart';
+import '../../data/providers/settings_provider.dart';
 
 class LogoWidget extends StatelessWidget {
   final double size;
@@ -10,6 +12,7 @@ class LogoWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<SettingsProvider>();
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -63,9 +66,9 @@ class LogoWidget extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 4),
-          const Text(
+          Text(
             AppMessages.yourSmartMarket,
-            style: TextStyle(
+            style: const TextStyle(
               color: AppColors.textHint,
               fontSize: 13,
             ),

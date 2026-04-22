@@ -3,10 +3,10 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_messages.dart';
 import 'package:provider/provider.dart';
 import '../../../data/providers/auth_provider.dart';
+import '../../../data/providers/settings_provider.dart';
 import '../../widgets/sm_button.dart';
 import '../../widgets/sm_text_field.dart';
 import '../../widgets/logo_widget.dart';
-import 'login_screen.dart';
 import '../home/main_shell.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -46,7 +46,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     if (mounted) {
       if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(AppMessages.registerSuccessTitle),
           backgroundColor: Colors.green,
         ));
@@ -76,6 +76,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<SettingsProvider>();
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -92,11 +93,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 12),
-                const LogoWidget(size: 48, showText: false),
+                LogoWidget(size: 48, showText: false),
                 const SizedBox(height: 32),
-                const Text(
-                  AppMessages.createAccountTitle,
-                  style: TextStyle(
+                Text(
+                  AppMessages.registerTitle,
+                  style: const TextStyle(
                     color: AppColors.textPrimary,
                     fontSize: 32,
                     fontWeight: FontWeight.w800,
@@ -104,10 +105,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     letterSpacing: -0.8,
                   ),
                 ),
-                const SizedBox(height: 8),
-                const Text(AppMessages.joinSmartMarket,
-                    style: TextStyle(
-                        color: AppColors.textSecondary, fontSize: 15)),
+                const SizedBox(height: 12),
+                Text(
+                  AppMessages.registerSubtitle,
+                  style: const TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 15,
+                      height: 1.6),
+                ),
                 const SizedBox(height: 40),
                 SmTextField(
                   controller: _nameController,
@@ -195,14 +200,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text(AppMessages.alreadyHaveAccount,
-                        style: TextStyle(color: AppColors.textSecondary)),
+                    Text(AppMessages.alreadyHaveAccount,
+                        style: const TextStyle(
+                            color: AppColors.textSecondary, fontSize: 14)),
                     TextButton(
-                      onPressed: () => Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (_) => const LoginScreen()),
-                      ),
-                      child: const Text(AppMessages.signInAction),
+                      onPressed: () => Navigator.pop(context),
+                      child: Text(AppMessages.signInAction,
+                          style: const TextStyle(
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 14)),
                     ),
                   ],
                 ),

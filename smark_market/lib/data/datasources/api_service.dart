@@ -66,7 +66,6 @@ class ApiService {
 
   static Future<ApiResponse<List<dynamic>>> searchProducts(String query) async {
     final url = '${AppConstants.baseUrl}/search?q=$query';
-    debugPrint('Connecting to: $url');
     try {
       // Use query parameter 'q' according to the backend
       final response = await http
@@ -76,7 +75,6 @@ class ApiService {
           .timeout(
               const Duration(seconds: 45)); // Increase timeout for scraping
 
-      debugPrint('Response Status: ${response.statusCode}');
       final data = jsonDecode(response.body);
 
       if (response.statusCode == 200 && data is List) {
@@ -94,7 +92,6 @@ class ApiService {
         );
       }
     } catch (e) {
-      debugPrint('Search Error: $e');
       return ApiResponse(
         success: false,
         message: AppMessages.connectionError,

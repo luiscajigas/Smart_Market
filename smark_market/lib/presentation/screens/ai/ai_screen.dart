@@ -44,9 +44,9 @@ class _AiScreenState extends State<AiScreen> {
     final recommendations = products
         .where((p) => p.prices.length > 1)
         .map((p) => AiRecommendation(
-              title: 'Save on ${p.name}',
+              title: '${AppMessages.saveOnPrefix}${p.name}',
               description:
-                  'Best price is at ${p.bestSupermarket}. You save \$${p.savings.toStringAsFixed(0)} compared to the most expensive.',
+                  '${AppMessages.bestPriceAtPrefix}${p.bestSupermarket}.${AppMessages.comparedToExpensiveSuffix}',
               type: 'saving',
               savingAmount: p.savings,
               icon: '💰',
@@ -78,14 +78,14 @@ class _AiScreenState extends State<AiScreen> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(AppMessages.aiTitle,
-                          style: TextStyle(
+                      Text(AppMessages.aiTitle,
+                          style: const TextStyle(
                               color: AppColors.textPrimary,
                               fontSize: 22,
                               fontWeight: FontWeight.w800,
                               letterSpacing: -0.5)),
-                      const Text(AppMessages.aiSubtitle,
-                          style: TextStyle(
+                      Text(AppMessages.aiSubtitle,
+                          style: const TextStyle(
                               color: AppColors.textSecondary, fontSize: 13)),
                     ],
                   ),
@@ -108,23 +108,23 @@ class _AiScreenState extends State<AiScreen> {
               ),
               const SizedBox(height: 24),
 
-              const Text(AppMessages.activeRecommendations,
-                  style: TextStyle(
+              Text(AppMessages.activeRecommendations,
+                  style: const TextStyle(
                       color: AppColors.textPrimary,
                       fontSize: 16,
                       fontWeight: FontWeight.w700)),
               const SizedBox(height: 4),
-              const Text(AppMessages.basedOnPatterns,
-                  style:
-                      TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+              Text(AppMessages.basedOnPatterns,
+                  style: const TextStyle(
+                      color: AppColors.textSecondary, fontSize: 13)),
               const SizedBox(height: 14),
 
               if (recommendations.isEmpty)
-                const Center(
+                Center(
                   child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 20),
+                    padding: const EdgeInsets.symmetric(vertical: 20),
                     child: Text(AppMessages.notEnoughRecommendations,
-                        style: TextStyle(color: AppColors.textSecondary)),
+                        style: const TextStyle(color: AppColors.textSecondary)),
                   ),
                 )
               else
@@ -143,12 +143,12 @@ class _AiScreenState extends State<AiScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Row(
+                    Row(
                       children: [
-                        Text('📊', style: TextStyle(fontSize: 20)),
-                        SizedBox(width: 8),
+                        const Text('📊', style: TextStyle(fontSize: 20)),
+                        const SizedBox(width: 8),
                         Text(AppMessages.consumptionAnalysis,
-                            style: TextStyle(
+                            style: const TextStyle(
                                 color: AppColors.textPrimary,
                                 fontSize: 15,
                                 fontWeight: FontWeight.w700)),
@@ -156,8 +156,8 @@ class _AiScreenState extends State<AiScreen> {
                     ),
                     const SizedBox(height: 16),
                     if (products.isEmpty)
-                      const Text(AppMessages.searchingToAnalyze,
-                          style: TextStyle(color: AppColors.textHint))
+                      Text(AppMessages.searchingToAnalyze,
+                          style: const TextStyle(color: AppColors.textHint))
                     else
                       ...products.take(4).map((p) => Padding(
                             padding: const EdgeInsets.only(bottom: 14),
@@ -187,8 +187,8 @@ class _AiScreenState extends State<AiScreen> {
                                                         FontWeight.w500)),
                                           ),
                                           const SizedBox(width: 8),
-                                          const Text('Analyzed',
-                                              style: TextStyle(
+                                          Text(AppMessages.analyzedLabel,
+                                              style: const TextStyle(
                                                   color: AppColors.textHint,
                                                   fontSize: 11)),
                                         ],
@@ -243,8 +243,8 @@ class _AiScreenState extends State<AiScreen> {
                           style:
                               const TextStyle(color: Colors.red, fontSize: 12))
                     else if (nearbySupermarkets.isEmpty)
-                      const Text(AppMessages.noResults,
-                          style: TextStyle(
+                      Text(AppMessages.noResults,
+                          style: const TextStyle(
                               color: AppColors.textHint, fontSize: 12))
                     else
                       ...nearbySupermarkets.take(3).map((s) {
@@ -336,18 +336,25 @@ class _StatChip extends StatelessWidget {
           children: [
             Text(icon, style: const TextStyle(fontSize: 22)),
             const SizedBox(width: 10),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(label,
-                    style: const TextStyle(
-                        color: AppColors.textHint, fontSize: 11)),
-                Text(value,
-                    style: const TextStyle(
-                        color: AppColors.textPrimary,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700)),
-              ],
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                          color: AppColors.textHint, fontSize: 11)),
+                  Text(value,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700)),
+                ],
+              ),
             ),
           ],
         ),

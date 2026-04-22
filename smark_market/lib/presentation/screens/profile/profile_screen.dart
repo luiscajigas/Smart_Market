@@ -43,26 +43,26 @@ class ProfileScreen extends StatelessWidget {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.cardBackground,
-        title: const Text(AppMessages.monthlyBudgetTitle,
-            style: TextStyle(color: AppColors.textPrimary)),
+        title: Text(AppMessages.monthlyBudgetTitle,
+            style: const TextStyle(color: AppColors.textPrimary)),
         content: TextField(
           controller: controller,
           keyboardType: TextInputType.number,
           style: const TextStyle(color: AppColors.textPrimary),
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             labelText: AppMessages.amountLabel,
-            labelStyle: TextStyle(color: AppColors.textHint),
-            enabledBorder: UnderlineInputBorder(
+            labelStyle: const TextStyle(color: AppColors.textHint),
+            enabledBorder: const UnderlineInputBorder(
                 borderSide: BorderSide(color: AppColors.border)),
-            focusedBorder: UnderlineInputBorder(
+            focusedBorder: const UnderlineInputBorder(
                 borderSide: BorderSide(color: AppColors.primary)),
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(AppMessages.cancelAction,
-                style: TextStyle(color: AppColors.textHint)),
+            child: Text(AppMessages.cancelAction,
+                style: const TextStyle(color: AppColors.textHint)),
           ),
           ElevatedButton(
             onPressed: () {
@@ -73,10 +73,49 @@ class ProfileScreen extends StatelessWidget {
               Navigator.pop(context);
             },
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
-            child: const Text(AppMessages.saveAction,
-                style: TextStyle(color: Colors.black)),
+            child: Text(AppMessages.saveAction,
+                style: const TextStyle(color: Colors.black)),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showLanguageDialog(BuildContext context) {
+    final settings = context.read<SettingsProvider>();
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.cardBackground,
+        title: Text(AppMessages.selectLanguageTitle,
+            style: const TextStyle(color: AppColors.textPrimary)),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: DropdownButton<String>(
+            value: settings.language,
+            isExpanded: true,
+            dropdownColor: AppColors.cardBackground,
+            iconEnabledColor: AppColors.textPrimary,
+            underline: Container(height: 1, color: AppColors.border),
+            items: [
+              DropdownMenuItem(
+                value: 'es',
+                child: Text(AppMessages.spanishLabel,
+                    style: const TextStyle(color: AppColors.textPrimary)),
+              ),
+              DropdownMenuItem(
+                value: 'en',
+                child: Text(AppMessages.englishLabel,
+                    style: const TextStyle(color: AppColors.textPrimary)),
+              ),
+            ],
+            onChanged: (value) {
+              if (value == null) return;
+              settings.setLanguage(value);
+              Navigator.pop(context);
+            },
+          ),
+        ),
       ),
     );
   }
@@ -96,7 +135,14 @@ class ProfileScreen extends StatelessWidget {
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              const SizedBox(height: 24),
+              Text(AppMessages.profileTitle,
+                  style: const TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 24,
+                      fontWeight: FontWeight.w800)),
               const SizedBox(height: 24),
               Container(
                 width: 80,
@@ -163,11 +209,7 @@ class ProfileScreen extends StatelessWidget {
                   Icons.notifications_outlined,
                   AppMessages.notificationsLabel,
                   AppMessages.notificationsDesc,
-                  () => _navigateToPlaceholder(
-                      context,
-                      AppMessages.notificationsLabel,
-                      'Receive personalized alerts about price changes and offers.',
-                      Icons.notifications_outlined)
+                  () {}
                 ),
                 (
                   Icons.location_on_outlined,
@@ -185,6 +227,12 @@ class ProfileScreen extends StatelessWidget {
                   () => _showBudgetDialog(context)
                 ),
                 (
+                  Icons.language_rounded,
+                  AppMessages.languageLabel,
+                  AppMessages.languageDesc,
+                  () => _showLanguageDialog(context)
+                ),
+                (
                   Icons.bar_chart_rounded,
                   AppMessages.statisticsLabel,
                   AppMessages.statisticsDesc,
@@ -198,11 +246,7 @@ class ProfileScreen extends StatelessWidget {
                   Icons.shield_outlined,
                   AppMessages.privacyLabel,
                   AppMessages.privacyDesc,
-                  () => _navigateToPlaceholder(
-                      context,
-                      AppMessages.privacyLabel,
-                      'Manage the security and privacy of your information.',
-                      Icons.shield_outlined)
+                  () {}
                 ),
                 (
                   Icons.help_outline_rounded,
@@ -260,7 +304,7 @@ class ProfileScreen extends StatelessWidget {
                         (_) => false);
                   },
                   icon: const Icon(Icons.logout_rounded, size: 18),
-                  label: const Text(AppMessages.signOutAction),
+                  label: Text(AppMessages.signOutAction),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppColors.error,
                     side: const BorderSide(color: AppColors.error),

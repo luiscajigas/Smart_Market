@@ -4,6 +4,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_messages.dart';
 import '../../../data/providers/product_provider.dart';
 import '../../../data/providers/favorites_provider.dart';
+import '../../../data/providers/settings_provider.dart';
 import '../../../data/models/product_model.dart';
 import '../../../data/models/search_result_model.dart';
 
@@ -39,6 +40,7 @@ class _CompareScreenState extends State<CompareScreen> {
   @override
   Widget build(BuildContext context) {
     final productProvider = context.watch<ProductProvider>();
+    context.watch<SettingsProvider>();
     final searchResponse = productProvider.lastSearch;
 
     return Scaffold(
@@ -51,16 +53,16 @@ class _CompareScreenState extends State<CompareScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(AppMessages.compareTitle,
-                      style: TextStyle(
+                  Text(AppMessages.compareTitle,
+                      style: const TextStyle(
                           color: AppColors.textPrimary,
                           fontSize: 24,
                           fontWeight: FontWeight.w800,
                           letterSpacing: -0.5)),
                   const SizedBox(height: 4),
-                  const Text(AppMessages.compareSubtitle,
-                      style: TextStyle(
-                          color: AppColors.textSecondary, fontSize: 14)),
+                  Text(AppMessages.compareSubtitle,
+                      style: const TextStyle(
+                          color: AppColors.textSecondary, fontSize: 13)),
                   const SizedBox(height: 16),
 
                   // Search Bar
@@ -91,17 +93,17 @@ class _CompareScreenState extends State<CompareScreen> {
                       child:
                           CircularProgressIndicator(color: AppColors.primary)))
             else if (searchResponse == null)
-              const Expanded(
+              Expanded(
                 child: Center(
                   child: Text(AppMessages.startComparingPrompt,
-                      style: TextStyle(color: AppColors.textSecondary)),
+                      style: const TextStyle(color: AppColors.textSecondary)),
                 ),
               )
             else if (productProvider.groupedProducts.isEmpty)
-              const Expanded(
+              Expanded(
                 child: Center(
                   child: Text(AppMessages.noProductsFound,
-                      style: TextStyle(color: AppColors.textSecondary)),
+                      style: const TextStyle(color: AppColors.textSecondary)),
                 ),
               )
             else
@@ -216,9 +218,9 @@ class _ProductComparisonCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 20),
-            const Text(
+            Text(
               AppMessages.pricesPerSupermarket,
-              style: TextStyle(
+              style: const TextStyle(
                   color: AppColors.textSecondary,
                   fontSize: 12,
                   fontWeight: FontWeight.w600),

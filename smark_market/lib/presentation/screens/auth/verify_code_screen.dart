@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_messages.dart';
+import '../../../data/providers/settings_provider.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../widgets/sm_button.dart';
 import 'new_password_screen.dart';
@@ -61,6 +63,7 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<SettingsProvider>();
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -79,18 +82,17 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
                 width: 56,
                 height: 56,
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.1),
+                  color: AppColors.primary.withAlpha(26),
                   borderRadius: BorderRadius.circular(16),
-                  border:
-                      Border.all(color: AppColors.primary.withOpacity(0.3)),
+                  border: Border.all(color: AppColors.primary.withAlpha(77)),
                 ),
                 child: const Icon(Icons.mark_email_read_outlined,
                     color: AppColors.primary, size: 28),
               ),
               const SizedBox(height: 28),
-              const Text(
-                AppMessages.verificationTitle,
-                style: TextStyle(
+              Text(
+                AppMessages.verifyCodeTitle,
+                style: const TextStyle(
                   color: AppColors.textPrimary,
                   fontSize: 32,
                   fontWeight: FontWeight.w800,
@@ -100,11 +102,9 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
               ),
               const SizedBox(height: 12),
               Text(
-                '${AppMessages.codeSentTo}${widget.email}',
+                '${AppMessages.verifyCodeInstructions} ${widget.email}',
                 style: const TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 15,
-                    height: 1.6),
+                    color: AppColors.textSecondary, fontSize: 15, height: 1.6),
               ),
               const SizedBox(height: 48),
               Row(
@@ -131,11 +131,24 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
                 onPressed: _code.length == 6 ? _verifyCode : null,
                 isLoading: _isLoading,
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 32),
+              Text(
+                AppMessages.didNotReceiveCode,
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: AppColors.textHint, fontSize: 13),
+              ),
               Center(
                 child: TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text(AppMessages.resendCodeAction),
+                  onPressed: () {
+                    // Logic to resend code
+                  },
+                  child: Text(
+                    AppMessages.resendCodeAction,
+                    style: const TextStyle(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 14),
+                  ),
                 ),
               ),
             ],

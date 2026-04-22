@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_messages.dart';
 import '../../data/models/mock_data.dart';
+import '../../data/providers/settings_provider.dart';
 
 class SavingsCard extends StatelessWidget {
   const SavingsCard({super.key});
 
   @override
   Widget build(BuildContext context) {
+    context.watch<SettingsProvider>();
     final pct = (MockData.monthlySpent / MockData.monthlyBudget * 100).round();
 
     return GestureDetector(
@@ -31,11 +34,11 @@ class SavingsCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(AppMessages.monthlyBudgetTitle,
-                    style: TextStyle(
-                        color: Colors.black54,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500)),
+                Text(AppMessages.monthlyBudgetTitle,
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600)),
                 Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -93,24 +96,24 @@ class SavingsCard extends StatelessWidget {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.cardBackground,
-        title: const Text(AppMessages.editBudgetTitle,
-            style: TextStyle(color: AppColors.textPrimary)),
+        title: Text(AppMessages.editBudgetTitle,
+            style: const TextStyle(color: AppColors.textPrimary)),
         content: TextField(
           controller: controller,
           keyboardType: TextInputType.number,
           style: const TextStyle(color: AppColors.textPrimary),
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             labelText: AppMessages.monthlyBudgetTitle,
-            labelStyle: TextStyle(color: AppColors.textHint),
-            enabledBorder: UnderlineInputBorder(
+            labelStyle: const TextStyle(color: AppColors.textHint),
+            enabledBorder: const UnderlineInputBorder(
                 borderSide: BorderSide(color: AppColors.primary)),
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(AppMessages.cancelAction,
-                style: TextStyle(color: AppColors.textSecondary)),
+            child: Text(AppMessages.cancelAction,
+                style: const TextStyle(color: AppColors.textSecondary)),
           ),
           ElevatedButton(
             onPressed: () {
@@ -120,13 +123,13 @@ class SavingsCard extends StatelessWidget {
                 // Simulate update
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text(AppMessages.saveBudgetSuccess)),
+                  SnackBar(content: Text(AppMessages.saveBudgetSuccess)),
                 );
               }
             },
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
-            child: const Text(AppMessages.saveAction,
-                style: TextStyle(color: Colors.black)),
+            child: Text(AppMessages.saveAction,
+                style: const TextStyle(color: Colors.black)),
           ),
         ],
       ),

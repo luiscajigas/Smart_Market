@@ -21,11 +21,16 @@ class Product {
     required this.unit,
   });
 
-  double get minPrice => prices.values.reduce((a, b) => a < b ? a : b);
-  double get maxPrice => prices.values.reduce((a, b) => a > b ? a : b);
-  double get savings => maxPrice - minPrice;
-  String get bestSupermarket =>
-      prices.entries.reduce((a, b) => a.value < b.value ? a : b).key;
+  bool get hasPrices => prices.isNotEmpty;
+
+  double get minPrice =>
+      prices.isEmpty ? 0 : prices.values.reduce((a, b) => a < b ? a : b);
+  double get maxPrice =>
+      prices.isEmpty ? 0 : prices.values.reduce((a, b) => a > b ? a : b);
+  double get savings => prices.isEmpty ? 0 : (maxPrice - minPrice);
+  String get bestSupermarket => prices.isEmpty
+      ? ''
+      : prices.entries.reduce((a, b) => a.value < b.value ? a : b).key;
 }
 
 class Supermarket {

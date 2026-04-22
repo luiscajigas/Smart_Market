@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/constants/app_messages.dart';
 import '../../data/models/product_model.dart';
 import '../../data/providers/product_provider.dart';
+import '../../data/providers/settings_provider.dart';
 
 class ProductCard extends StatelessWidget {
   final Product product;
@@ -10,6 +12,8 @@ class ProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<SettingsProvider>();
+    final url = product.urls[product.bestSupermarket] ?? product.buyUrl;
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -24,13 +28,13 @@ class ProductCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Icon(Icons.shopping_bag_outlined,
-                  color: AppColors.primary.withOpacity(0.5), size: 24),
+                  color: AppColors.primary.withAlpha(128), size: 24),
               if (product.savings > 0)
                 Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
-                    color: AppColors.primary.withOpacity(0.1),
+                    color: AppColors.primary.withAlpha(26),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
@@ -62,9 +66,13 @@ class ProductCard extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('desde',
-                      style: TextStyle(color: AppColors.textHint, fontSize: 9)),
-                  Text('\$${product.minPrice.toStringAsFixed(0)}',
+                  Text(AppMessages.fromLabel,
+                      style: const TextStyle(
+                          color: AppColors.textHint, fontSize: 9)),
+                  Text(
+                      product.hasPrices
+                          ? '\$${product.minPrice.toStringAsFixed(0)}'
+                          : '—',
                       style: const TextStyle(
                           color: AppColors.primary,
                           fontSize: 15,
@@ -74,16 +82,21 @@ class ProductCard extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text(product.bestSupermarket,
+                  Text(
+                      product.bestSupermarket.isNotEmpty
+                          ? product.bestSupermarket
+                          : '—',
                       style: const TextStyle(
                           color: AppColors.textSecondary, fontSize: 9)),
                   const SizedBox(height: 4),
                   SizedBox(
                     height: 28,
                     child: ElevatedButton(
-                      onPressed: () => context
-                          .read<ProductProvider>()
-                          .trackProductClick(product),
+                      onPressed: url == null
+                          ? null
+                          : () => context
+                              .read<ProductProvider>()
+                              .trackProductClick(product),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
                         foregroundColor: Colors.white,
@@ -92,8 +105,8 @@ class ProductCard extends StatelessWidget {
                             borderRadius: BorderRadius.circular(8)),
                         elevation: 0,
                       ),
-                      child: const Text('Comprar',
-                          style: TextStyle(
+                      child: Text(AppMessages.buyAction,
+                          style: const TextStyle(
                               fontSize: 10, fontWeight: FontWeight.bold)),
                     ),
                   ),

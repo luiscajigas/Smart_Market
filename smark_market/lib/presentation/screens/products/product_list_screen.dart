@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_messages.dart';
 import '../../../data/datasources/api_service.dart';
 import '../../../data/models/search_result_model.dart';
 
@@ -40,8 +41,8 @@ class _ProductListScreenState extends State<ProductListScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Compared Products',
-            style: TextStyle(color: AppColors.textPrimary)),
+        title: Text(AppMessages.comparedProductsTitle,
+            style: const TextStyle(color: AppColors.textPrimary)),
         backgroundColor: AppColors.background,
         elevation: 0,
         iconTheme: const IconThemeData(color: AppColors.textPrimary),
@@ -50,9 +51,9 @@ class _ProductListScreenState extends State<ProductListScreen> {
           ? const Center(
               child: CircularProgressIndicator(color: AppColors.primary))
           : _products.isEmpty
-              ? const Center(
-                  child: Text('No products available',
-                      style: TextStyle(color: AppColors.textSecondary)))
+              ? Center(
+                  child: Text(AppMessages.noProductsAvailable,
+                      style: const TextStyle(color: AppColors.textSecondary)))
               : Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: GridView.builder(

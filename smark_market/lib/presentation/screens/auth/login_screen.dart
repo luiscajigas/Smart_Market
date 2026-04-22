@@ -3,6 +3,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_messages.dart';
 import 'package:provider/provider.dart';
 import '../../../data/providers/auth_provider.dart';
+import '../../../data/providers/settings_provider.dart';
 import '../../widgets/sm_button.dart';
 import '../../widgets/sm_text_field.dart';
 import '../../widgets/logo_widget.dart';
@@ -58,6 +59,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<SettingsProvider>();
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -68,11 +70,11 @@ class _LoginScreenState extends State<LoginScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 60),
-                const LogoWidget(size: 60),
+                LogoWidget(size: 60),
                 const SizedBox(height: 48),
-                const Text(
-                  AppMessages.welcomeBackTitle,
-                  style: TextStyle(
+                Text(
+                  AppMessages.loginTitle,
+                  style: const TextStyle(
                     color: AppColors.textPrimary,
                     fontSize: 32,
                     fontWeight: FontWeight.w800,
@@ -80,10 +82,14 @@ class _LoginScreenState extends State<LoginScreen> {
                     letterSpacing: -0.8,
                   ),
                 ),
-                const SizedBox(height: 8),
-                const Text(AppMessages.enterCredentials,
-                    style: TextStyle(
-                        color: AppColors.textSecondary, fontSize: 15)),
+                const SizedBox(height: 12),
+                Text(
+                  AppMessages.loginSubtitle,
+                  style: const TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 15,
+                      height: 1.6),
+                ),
                 const SizedBox(height: 40),
                 SmTextField(
                   controller: _emailController,
@@ -124,18 +130,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 12),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton(
-                    onPressed: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (_) => const ForgotPasswordScreen()),
-                    ),
-                    child: const Text(AppMessages.forgotPasswordAction),
-                  ),
-                ),
                 const SizedBox(height: 32),
                 Consumer<AuthProvider>(
                   builder: (context, auth, _) => SmButton(
@@ -148,17 +142,35 @@ class _LoginScreenState extends State<LoginScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text(AppMessages.dontHaveAccount,
-                        style: TextStyle(color: AppColors.textSecondary)),
+                    Text(AppMessages.dontHaveAccount,
+                        style: const TextStyle(
+                            color: AppColors.textSecondary, fontSize: 14)),
                     TextButton(
                       onPressed: () => Navigator.push(
                         context,
                         MaterialPageRoute(
                             builder: (_) => const RegisterScreen()),
                       ),
-                      child: const Text(AppMessages.signUpAction),
+                      child: Text(AppMessages.signUpAction,
+                          style: const TextStyle(
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 14)),
                     ),
                   ],
+                ),
+                const SizedBox(height: 12),
+                Center(
+                  child: TextButton(
+                    onPressed: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const ForgotPasswordScreen()),
+                    ),
+                    child: Text(AppMessages.forgotPasswordAction,
+                        style: const TextStyle(
+                            color: AppColors.textHint, fontSize: 14)),
+                  ),
                 ),
               ],
             ),

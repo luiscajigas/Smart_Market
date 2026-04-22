@@ -67,9 +67,9 @@ class FeaturePlaceholderScreen extends StatelessWidget {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 48),
-              const Text(
+              Text(
                 AppMessages.comingSoon,
-                style: TextStyle(
+                style: const TextStyle(
                   color: AppColors.primary,
                   fontSize: 14,
                   fontWeight: FontWeight.w600,

@@ -5,6 +5,7 @@ import '../../../core/constants/app_messages.dart';
 import '../../../data/models/mock_data.dart';
 import '../../../data/providers/auth_provider.dart';
 import '../../../data/providers/product_provider.dart';
+import '../../../data/providers/settings_provider.dart';
 import '../../widgets/savings_card.dart';
 import '../../widgets/ai_banner.dart';
 import '../../widgets/product_card.dart';
@@ -33,6 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final authProvider = context.watch<AuthProvider>();
     final productProvider = context.watch<ProductProvider>();
+    context.watch<SettingsProvider>();
 
     final metadata = authProvider.currentUser?.userMetadata;
     final name = metadata?['full_name'] ?? 'User';
@@ -43,14 +45,18 @@ class _HomeScreenState extends State<HomeScreen> {
         : productProvider.groupedProducts.take(4).toList();
 
     final isUsingFavorites = productProvider.favoriteProducts.isNotEmpty;
+    final hasProducts = displayProducts.isNotEmpty;
 
     return Scaffold(
       body: CustomScrollView(
+        physics: const BouncingScrollPhysics(),
         slivers: [
           SliverAppBar(
             expandedHeight: 120,
             floating: true,
             snap: true,
+            pinned: true,
+            elevation: 0,
             backgroundColor: AppColors.background,
             flexibleSpace: FlexibleSpaceBar(
               background: Container(
@@ -67,8 +73,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             style: const TextStyle(
                                 color: AppColors.textSecondary, fontSize: 14)),
                         const SizedBox(height: 2),
-                        const Text(AppMessages.buyTodayPrompt,
-                            style: TextStyle(
+                        Text(AppMessages.buyTodayPrompt,
+                            style: const TextStyle(
                                 color: AppColors.textPrimary,
                                 fontSize: 22,
                                 fontWeight: FontWeight.w800,
@@ -103,6 +109,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   // Search bar
                   GestureDetector(
+                    behavior: HitTestBehavior.opaque,
                     onTap: () {
                       // Redirect to compare tab (index 1 in MainShell)
                       final state =
@@ -118,14 +125,14 @@ class _HomeScreenState extends State<HomeScreen> {
                         borderRadius: BorderRadius.circular(14),
                         border: Border.all(color: AppColors.border),
                       ),
-                      child: const Row(
+                      child: Row(
                         children: [
-                          SizedBox(width: 16),
-                          Icon(Icons.search_rounded,
+                          const SizedBox(width: 16),
+                          const Icon(Icons.search_rounded,
                               color: AppColors.textHint, size: 20),
-                          SizedBox(width: 10),
-                          const Text(AppMessages.searchProductsHint,
-                              style: TextStyle(
+                          const SizedBox(width: 10),
+                          Text(AppMessages.searchProductsHint,
+                              style: const TextStyle(
                                   color: AppColors.textHint, fontSize: 14)),
                         ],
                       ),
@@ -140,8 +147,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(height: 24),
 
                   // Supermarkets
-                  const Text(AppMessages.nearbySupermarkets,
-                      style: TextStyle(
+                  Text(AppMessages.nearbySupermarkets,
+                      style: const TextStyle(
                           color: AppColors.textPrimary,
                           fontSize: 16,
                           fontWeight: FontWeight.w800)),
@@ -154,6 +161,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       itemBuilder: (_, i) {
                         final shop = MockData.supermarkets[i];
                         return GestureDetector(
+                          behavior: HitTestBehavior.opaque,
                           onTap: () => Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -201,55 +209,61 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 24),
 
-                  // Products header
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                          isUsingFavorites
-                              ? AppMessages.yourFavorites
-                              : AppMessages.featuredProducts,
-                          style: const TextStyle(
-                              color: AppColors.textPrimary,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w800)),
-                      GestureDetector(
-                        onTap: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (_) => const ProductListScreen())),
-                        child: const Text(AppMessages.seeAllAction,
-                            style: TextStyle(
-                                color: AppColors.primary,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600)),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
+                  // Products header - Only if there are products
+                  if (hasProducts) ...[
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                            isUsingFavorites
+                                ? AppMessages.yourFavorites
+                                : AppMessages.featuredProducts,
+                            style: const TextStyle(
+                                color: AppColors.textPrimary,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w800)),
+                        GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (_) => const ProductListScreen())),
+                          child: Text(AppMessages.seeAllAction,
+                              style: const TextStyle(
+                                  color: AppColors.primary,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600)),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                  ],
                 ],
               ),
             ),
           ),
-          SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            sliver: productProvider.isLoading
-                ? const SliverFillRemaining(
-                    child: Center(child: CircularProgressIndicator()))
-                : SliverGrid(
-                    delegate: SliverChildBuilderDelegate(
-                      (_, i) => ProductCard(product: displayProducts[i]),
-                      childCount: displayProducts.length,
-                    ),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      crossAxisSpacing: 12,
-                      mainAxisSpacing: 12,
-                      childAspectRatio: 0.85,
-                    ),
-                  ),
-          ),
+          if (hasProducts)
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              sliver: SliverGrid(
+                delegate: SliverChildBuilderDelegate(
+                  (_, i) => ProductCard(product: displayProducts[i]),
+                  childCount: displayProducts.length,
+                ),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 12,
+                  childAspectRatio: 0.85,
+                ),
+              ),
+            ),
+          // Loading state if needed
+          if (productProvider.isFeaturedLoading && !hasProducts)
+            const SliverFillRemaining(
+              hasScrollBody: false,
+              child: Center(child: CircularProgressIndicator()),
+            ),
           const SliverToBoxAdapter(child: SizedBox(height: 24)),
         ],
       ),
@@ -261,32 +275,32 @@ class _HomeScreenState extends State<HomeScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.cardBackground,
-        title: const Text(AppMessages.notificationsTitle,
-            style: TextStyle(color: AppColors.textPrimary)),
-        content: const Column(
+        title: Text(AppMessages.notificationsTitle,
+            style: const TextStyle(color: AppColors.textPrimary)),
+        content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
               leading: Icon(Icons.notifications_active_outlined,
                   color: AppColors.primary),
               title: Text(AppMessages.riceOfferTitle,
-                  style: TextStyle(color: AppColors.textPrimary)),
+                  style: const TextStyle(color: AppColors.textPrimary)),
               subtitle: Text(AppMessages.riceOfferDesc,
-                  style: TextStyle(color: AppColors.textSecondary)),
+                  style: const TextStyle(color: AppColors.textSecondary)),
             ),
             ListTile(
               leading: Icon(Icons.check_circle_outline, color: Colors.green),
               title: Text(AppMessages.searchCompletedTitle,
-                  style: TextStyle(color: AppColors.textPrimary)),
+                  style: const TextStyle(color: AppColors.textPrimary)),
               subtitle: Text(AppMessages.searchCompletedDesc,
-                  style: TextStyle(color: AppColors.textSecondary)),
+                  style: const TextStyle(color: AppColors.textSecondary)),
             ),
           ],
         ),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text(AppMessages.closeAction)),
+              child: Text(AppMessages.closeAction)),
         ],
       ),
     );

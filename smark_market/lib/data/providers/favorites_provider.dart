@@ -34,7 +34,6 @@ class FavoritesProvider extends ChangeNotifier {
               }))
           .toList();
     } catch (e) {
-      print('Error loading favorites: $e');
     }
 
     _isLoading = false;
@@ -69,7 +68,6 @@ class FavoritesProvider extends ChangeNotifier {
       }
       notifyListeners();
     } catch (e) {
-      print('Error toggling favorite: $e');
     }
   }
 

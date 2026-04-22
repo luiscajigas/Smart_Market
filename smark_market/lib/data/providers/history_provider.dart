@@ -9,7 +9,8 @@ class HistoryProvider extends ChangeNotifier {
   String? _errorMessage;
   bool _isLoading = true;
 
-  List<Map<String, dynamic>> get history => _history;
+  List<Map<String, dynamic>> get history =>
+      _history.where((item) => item['source'] == 'purchase').toList();
   String? get errorMessage => _errorMessage;
   bool get isLoading => _isLoading;
 

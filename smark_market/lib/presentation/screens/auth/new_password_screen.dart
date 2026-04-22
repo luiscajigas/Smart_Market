@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_messages.dart';
+import '../../../data/providers/settings_provider.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../widgets/sm_button.dart';
 import '../../widgets/sm_text_field.dart';
@@ -62,21 +64,19 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
                     color: AppColors.primary, size: 36),
               ),
               const SizedBox(height: 20),
-              const Text(
+              Text(
                 AppMessages.passwordUpdatedTitle,
-                style: TextStyle(
+                style: const TextStyle(
                     color: AppColors.textPrimary,
                     fontSize: 20,
                     fontWeight: FontWeight.w700),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 8),
-              const Text(
+              Text(
                 AppMessages.passwordUpdatedDescription,
-                style: TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 14,
-                    height: 1.5),
+                style: const TextStyle(
+                    color: AppColors.textSecondary, fontSize: 14, height: 1.5),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),
@@ -102,6 +102,7 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<SettingsProvider>();
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -124,16 +125,16 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
                   decoration: BoxDecoration(
                     color: AppColors.primary.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                        color: AppColors.primary.withOpacity(0.3)),
+                    border:
+                        Border.all(color: AppColors.primary.withOpacity(0.3)),
                   ),
                   child: const Icon(Icons.key_rounded,
                       color: AppColors.primary, size: 28),
                 ),
                 const SizedBox(height: 28),
-                const Text(
+                Text(
                   AppMessages.newPasswordTitle,
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: AppColors.textPrimary,
                     fontSize: 32,
                     fontWeight: FontWeight.w800,
@@ -142,9 +143,9 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                const Text(
+                Text(
                   AppMessages.newPasswordInstructions,
-                  style: TextStyle(
+                  style: const TextStyle(
                       color: AppColors.textSecondary,
                       fontSize: 15,
                       height: 1.6),
@@ -155,8 +156,7 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
                   label: AppMessages.newPasswordLabel,
                   hint: '••••••••',
                   obscureText: _obscurePassword,
-                  prefixIcon:
-                      const Icon(Icons.lock_outline_rounded, size: 20),
+                  prefixIcon: const Icon(Icons.lock_outline_rounded, size: 20),
                   suffixIcon: IconButton(
                     icon: Icon(
                       _obscurePassword
@@ -168,7 +168,8 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
                         setState(() => _obscurePassword = !_obscurePassword),
                   ),
                   validator: (v) {
-                    if (v == null || v.isEmpty) return AppMessages.passwordRequiredError;
+                    if (v == null || v.isEmpty)
+                      return AppMessages.passwordRequiredError;
                     if (v.length < 8) return AppMessages.passwordMinLengthError;
                     if (!v.contains(RegExp(r'[A-Z]')))
                       return AppMessages.passwordUppercaseError;
@@ -187,8 +188,7 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
                   obscureText: _obscureConfirm,
                   textInputAction: TextInputAction.done,
                   onFieldSubmitted: (_) => _changePassword(),
-                  prefixIcon:
-                      const Icon(Icons.lock_outline_rounded, size: 20),
+                  prefixIcon: const Icon(Icons.lock_outline_rounded, size: 20),
                   suffixIcon: IconButton(
                     icon: Icon(
                       _obscureConfirm
@@ -200,7 +200,8 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
                         setState(() => _obscureConfirm = !_obscureConfirm),
                   ),
                   validator: (v) {
-                    if (v == null || v.isEmpty) return AppMessages.confirmPasswordRequired;
+                    if (v == null || v.isEmpty)
+                      return AppMessages.confirmPasswordRequired;
                     if (v != _passwordController.text)
                       return AppMessages.passwordsNoMatch;
                     return null;
