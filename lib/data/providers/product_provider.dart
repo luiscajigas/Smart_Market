@@ -91,7 +91,8 @@ class ProductProvider extends ChangeNotifier {
     _setLoading(true);
     _setError(null);
 
-    final response = await ApiService.searchProducts(query);
+    final userId = Supabase.instance.client.auth.currentUser?.id;
+    final response = await ApiService.searchProducts(query, userId: userId);
 
     if (response.success && response.data != null) {
       _lastSearch = SearchResponse.fromList(response.data!, query);

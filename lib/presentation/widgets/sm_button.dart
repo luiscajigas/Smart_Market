@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../core/constants/app_colors.dart';
 
 class SmButton extends StatelessWidget {
   final String label;
@@ -23,7 +22,7 @@ class SmButton extends StatelessWidget {
             height: 22,
             child: CircularProgressIndicator(
               strokeWidth: 2.5,
-              color: outlined ? AppColors.primary : Colors.white,
+              color: outlined ? Theme.of(context).colorScheme.primary : Colors.white,
             ),
           )
         : Text(label);

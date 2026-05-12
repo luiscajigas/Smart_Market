@@ -12,7 +12,13 @@ class LogoWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    context.watch<SettingsProvider>();
+    final settings = context.watch<SettingsProvider>();
+    final primaryColor =
+        settings.isDarkMode ? AppColors.primaryGreen : AppColors.primaryBlue;
+    final primaryGradient = settings.isDarkMode
+        ? AppColors.primaryGradientGreen
+        : AppColors.primaryGradientBlue;
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -20,11 +26,11 @@ class LogoWidget extends StatelessWidget {
           width: size,
           height: size,
           decoration: BoxDecoration(
-            gradient: AppColors.primaryGradient,
+            gradient: primaryGradient,
             borderRadius: BorderRadius.circular(size * 0.28),
             boxShadow: [
               BoxShadow(
-                color: AppColors.primary.withOpacity(0.4),
+                color: primaryColor.withOpacity(0.4),
                 blurRadius: 24,
                 offset: const Offset(0, 8),
               ),
@@ -56,10 +62,10 @@ class LogoWidget extends StatelessWidget {
         ),
         if (showText) ...[
           const SizedBox(height: 14),
-          const Text(
+          Text(
             'Smart Market',
             style: TextStyle(
-              color: AppColors.textPrimary,
+              color: Theme.of(context).textTheme.titleLarge?.color,
               fontSize: 22,
               fontWeight: FontWeight.w700,
               letterSpacing: -0.5,
@@ -68,8 +74,12 @@ class LogoWidget extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             AppMessages.yourSmartMarket,
-            style: const TextStyle(
-              color: AppColors.textHint,
+            style: TextStyle(
+              color: Theme.of(context)
+                  .textTheme
+                  .bodySmall
+                  ?.color
+                  ?.withOpacity(0.7),
               fontSize: 13,
             ),
           ),

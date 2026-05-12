@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../../core/constants/app_constants.dart';
@@ -64,37 +65,80 @@ class ApiService {
     }
   }
 
-  static Future<ApiResponse<List<dynamic>>> searchProducts(String query) async {
-    final url = '${AppConstants.baseUrl}/search?q=$query';
+  static Future<ApiResponse<List<dynamic>>> searchProducts(
+    String query, {
+    String? userId,
+  }) async {
     try {
-      // Use query parameter 'q' according to the backend
+      final uri = Uri.parse('${AppConstants.baseUrl}/search').replace(
+        queryParameters: {
+          'q': query,
+          if (userId != null && userId.trim().isNotEmpty) 'user_id': userId,
+        },
+      );
+
       final response = await http
           .get(
-            Uri.parse(url),
+            uri,
           )
           .timeout(
-              const Duration(seconds: 45)); // Increase timeout for scraping
+              const Duration(seconds: 90)); // Increase timeout for scraping
 
-      final data = jsonDecode(response.body);
+      dynamic decoded;
+      try {
+        decoded = jsonDecode(response.body);
+      } catch (_) {
+        decoded = null;
+      }
 
-      if (response.statusCode == 200 && data is List) {
+      if (response.statusCode == 200 && decoded is List) {
         return ApiResponse(
           success: true,
           message: 'Success',
-          data: data,
-          statusCode: response.statusCode,
-        );
-      } else {
-        return ApiResponse(
-          success: false,
-          message: AppMessages.serverError,
+          data: decoded,
           statusCode: response.statusCode,
         );
       }
+
+      if (decoded is Map<String, dynamic>) {
+        final detail = decoded['detail']?.toString();
+        return ApiResponse(
+          success: false,
+          message: detail?.isNotEmpty == true
+              ? detail!
+              : '${AppMessages.serverError} (HTTP ${response.statusCode})',
+          statusCode: response.statusCode,
+        );
+      }
+
+      final bodyPreview = response.body.trim().isEmpty
+          ? ''
+          : response.body.trim().substring(
+                0,
+                response.body.trim().length > 160
+                    ? 160
+                    : response.body.trim().length,
+              );
+
+      return ApiResponse(
+        success: false,
+        message: bodyPreview.isEmpty
+            ? '${AppMessages.serverError} (HTTP ${response.statusCode})'
+            : '${AppMessages.serverError} (HTTP ${response.statusCode}): $bodyPreview',
+        statusCode: response.statusCode,
+      );
+    } on TimeoutException {
+      return ApiResponse(
+        success: false,
+        message: AppMessages.serverError,
+        statusCode: 408,
+      );
     } catch (e) {
       return ApiResponse(
         success: false,
-        message: AppMessages.connectionError,
+        message: e.toString().contains('SocketException')
+            ? AppMessages.connectionError
+            : AppMessages.serverError,
         statusCode: 0,
       );
     }

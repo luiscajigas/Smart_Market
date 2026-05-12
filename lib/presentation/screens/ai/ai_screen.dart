@@ -20,7 +20,9 @@ class _AiScreenState extends State<AiScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<LocationProvider>().determinePosition();
+      final location = context.read<LocationProvider>();
+      location.startTracking();
+      location.loadSupermarketLocations();
     });
   }
 
@@ -31,7 +33,10 @@ class _AiScreenState extends State<AiScreen> {
     final settingsProvider = context.watch<SettingsProvider>();
 
     final products = productProvider.groupedProducts;
-    final nearbySupermarkets = locationProvider.getNearbySupermarkets();
+    final nearbySupermarkets = locationProvider.getNearbySupermarkets(
+      locationProvider.supermarketLocations,
+      maxDistanceKm: 10,
+    );
 
     // Real saving logic based on budget
     final totalSavingsProjected =
@@ -271,8 +276,8 @@ class _AiScreenState extends State<AiScreen> {
                               fontSize: 12))
                     else
                       ...nearbySupermarkets.take(3).map((s) {
-                        final shop = s['supermarket'] as SupermarketLocation;
-                        final distance = s['distance'] as double;
+                        final shop = s['supermarket'] as Supermarket;
+                        final distanceKm = s['distanceKm'] as double;
                         final isNearest = nearbySupermarkets.indexOf(s) == 0;
                         final primaryColor = settingsProvider.isDarkMode
                             ? AppColors.primaryGreen
@@ -312,7 +317,11 @@ class _AiScreenState extends State<AiScreen> {
                                                   ?.color,
                                           fontWeight: FontWeight.w600,
                                           fontSize: 13)),
-                                  Text(shop.address,
+                                  Text(
+                                      shop.latitude != null &&
+                                              shop.longitude != null
+                                          ? '${shop.latitude!.toStringAsFixed(5)}, ${shop.longitude!.toStringAsFixed(5)}'
+                                          : '',
                                       style: TextStyle(
                                           color: Theme.of(context)
                                               .textTheme
@@ -321,7 +330,7 @@ class _AiScreenState extends State<AiScreen> {
                                           fontSize: 10)),
                                 ],
                               )),
-                              Text('${distance.toStringAsFixed(1)} km',
+                              Text('${distanceKm.toStringAsFixed(1)} km',
                                   style: TextStyle(
                                       color: Theme.of(context)
                                           .textTheme
@@ -345,7 +354,7 @@ class _AiScreenState extends State<AiScreen> {
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              '${AppMessages.nearestSupermarketRecommendation}${(nearbySupermarkets.first['supermarket'] as SupermarketLocation).name}${AppMessages.nearestSupermarketSuffix}',
+                              '${AppMessages.nearestSupermarketRecommendation}${(nearbySupermarkets.first['supermarket'] as Supermarket).name}${AppMessages.nearestSupermarketSuffix}',
                               style: TextStyle(
                                   color: Theme.of(context)
                                       .textTheme

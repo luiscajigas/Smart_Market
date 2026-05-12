@@ -2,10 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_messages.dart';
-import '../../../data/models/mock_data.dart';
 import '../../../data/providers/auth_provider.dart';
 import '../../../data/providers/product_provider.dart';
 import '../../../data/providers/settings_provider.dart';
+import '../../../data/providers/favorites_provider.dart';
+import '../../../data/providers/location_provider.dart';
+import '../../../data/providers/history_provider.dart';
+import '../../../data/models/search_result_model.dart';
+import '../../../data/models/product_model.dart';
 import '../../widgets/savings_card.dart';
 import '../../widgets/ai_banner.dart';
 import '../../widgets/product_card.dart';
@@ -24,9 +28,16 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    // Load featured products on start
+    // Load featured products and favorites on start
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<ProductProvider>().fetchFeaturedProducts();
+      if (mounted) {
+        context.read<ProductProvider>().fetchFeaturedProducts();
+        context.read<FavoritesProvider>().refresh();
+        final location = context.read<LocationProvider>();
+        location.startTracking();
+        location.loadSupermarketLocations();
+        context.read<HistoryProvider>().loadHistory();
+      }
     });
   }
 
@@ -34,21 +45,53 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final authProvider = context.watch<AuthProvider>();
     final productProvider = context.watch<ProductProvider>();
-    context.watch<SettingsProvider>();
+    final favoritesProvider = context.watch<FavoritesProvider>();
+    final locationProvider = context.watch<LocationProvider>();
+    final settings = context.watch<SettingsProvider>();
+    final primaryColor =
+        settings.isDarkMode ? AppColors.primaryGreen : AppColors.primaryBlue;
 
     final metadata = authProvider.currentUser?.userMetadata;
     final name = metadata?['full_name'] ?? 'User';
 
-    // Use favorite products if they exist, otherwise featured ones
-    final displayProducts = productProvider.favoriteProducts.isNotEmpty
-        ? productProvider.favoriteProducts.take(4).toList()
-        : productProvider.groupedProducts.take(4).toList();
+    // Prioritize favorites from FavoritesProvider, then from ProductProvider history
+    List<Product> displayProducts = [];
+    bool isUsingFavorites = false;
 
-    final isUsingFavorites = productProvider.favoriteProducts.isNotEmpty;
+    if (favoritesProvider.favorites.isNotEmpty) {
+      displayProducts = favoritesProvider.favorites.take(4).map((fav) {
+        return Product(
+          id: fav.url ?? fav.name,
+          name: fav.name,
+          category: fav.category ?? 'General',
+          imageEmoji: '🛒',
+          imageUrl: fav.images.isNotEmpty ? fav.images.first : null,
+          buyUrl: fav.url,
+          prices: {fav.source: fav.price},
+          urls: fav.url != null ? {fav.source: fav.url!} : {},
+          unit: 'ud',
+        );
+      }).toList();
+      isUsingFavorites = true;
+    } else if (productProvider.favoriteProducts.isNotEmpty) {
+      // Fallback to purchase history products
+      displayProducts = productProvider.favoriteProducts.take(4).toList();
+      isUsingFavorites = true;
+    } else if (!favoritesProvider.isLoading &&
+        !productProvider.isFeaturedLoading) {
+      // Fallback to featured products ONLY if not loading favorites/history
+      displayProducts = productProvider.groupedProducts.take(4).toList();
+      isUsingFavorites = false;
+    }
+
     final hasProducts = displayProducts.isNotEmpty;
+    final isLoading =
+        favoritesProvider.isLoading || productProvider.isFeaturedLoading;
 
     return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: CustomScrollView(
+        key: const PageStorageKey('home_scroll_view'),
         physics: const BouncingScrollPhysics(),
         slivers: [
           SliverAppBar(
@@ -91,17 +134,29 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     IconButton(
                       onPressed: () => _showNotifications(context),
-                      icon: Container(
-                        width: 42,
-                        height: 42,
-                        decoration: BoxDecoration(
-                          color: AppColors.primary.withOpacity(0.15),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                              color: AppColors.primary.withOpacity(0.3)),
-                        ),
-                        child: const Icon(Icons.notifications_outlined,
-                            color: AppColors.primary, size: 20),
+                      icon: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          Container(
+                            width: 36,
+                            height: 36,
+                            decoration: BoxDecoration(
+                              color: primaryColor.withOpacity(0.15),
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          Container(
+                            width: 36,
+                            height: 36,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                  color: primaryColor.withOpacity(0.3)),
+                            ),
+                          ),
+                          Icon(Icons.notifications_none_rounded,
+                              color: primaryColor, size: 20),
+                        ],
                       ),
                     ),
                   ],
@@ -119,7 +174,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   GestureDetector(
                     behavior: HitTestBehavior.opaque,
                     onTap: () {
-                      // Redirect to compare tab (index 1 in MainShell)
                       final state =
                           context.findAncestorStateOfType<MainShellState>();
                       if (state != null) {
@@ -164,14 +218,47 @@ class _HomeScreenState extends State<HomeScreen> {
                           fontSize: 16,
                           fontWeight: FontWeight.w800)),
                   const SizedBox(height: 12),
+                  if (locationProvider.isSupermarketsLoading)
+                    const Padding(
+                      padding: EdgeInsets.only(bottom: 10),
+                      child: LinearProgressIndicator(minHeight: 2),
+                    )
+                  else if (locationProvider.supermarketsError != null)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              locationProvider.supermarketsError!,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: Colors.red,
+                                fontSize: 11,
+                              ),
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: () => locationProvider
+                                .loadSupermarketLocations(),
+                            child: const Text('Reintentar'),
+                          ),
+                        ],
+                      ),
+                    ),
                   SizedBox(
                     height: 110,
                     child: ListView.builder(
                       scrollDirection: Axis.horizontal,
-                      itemCount: MockData.supermarkets.length,
+                      itemCount: locationProvider.supermarketChains.length,
                       itemBuilder: (_, i) {
-                        final shop = MockData.supermarkets[i];
+                        final shop = locationProvider.supermarketChains[i];
+                        final distanceKm =
+                            locationProvider.distanceKmToChain(shop.id);
+
                         return GestureDetector(
+                          key: ValueKey('supermarket_${shop.id}'),
                           behavior: HitTestBehavior.opaque,
                           onTap: () => Navigator.push(
                               context,
@@ -195,12 +282,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                 Container(
                                   padding: const EdgeInsets.all(8),
                                   decoration: BoxDecoration(
-                                    color: AppColors.primary.withOpacity(0.1),
+                                    color: primaryColor.withOpacity(0.1),
                                     shape: BoxShape.circle,
                                   ),
                                   child: Text(shop.logo,
-                                      style: const TextStyle(
-                                          color: AppColors.primary,
+                                      style: TextStyle(
+                                          color: primaryColor,
                                           fontSize: 14,
                                           fontWeight: FontWeight.bold)),
                                 ),
@@ -213,7 +300,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                             ?.color,
                                         fontSize: 12,
                                         fontWeight: FontWeight.w600)),
-                                Text('${shop.distance}km',
+                                Text(
+                                    distanceKm == null
+                                        ? '— km'
+                                        : '${distanceKm.toStringAsFixed(1)} km',
                                     style: const TextStyle(
                                         color: AppColors.textHint,
                                         fontSize: 10)),
@@ -224,101 +314,142 @@ class _HomeScreenState extends State<HomeScreen> {
                       },
                     ),
                   ),
-                  const SizedBox(height: 24),
-
-                  // Featured Products
-                  if (hasProducts) ...[
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                            isUsingFavorites
-                                ? AppMessages.yourFavorites
-                                : AppMessages.featuredProducts,
-                            style: TextStyle(
-                                color: Theme.of(context)
-                                    .textTheme
-                                    .titleMedium
-                                    ?.color,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w800)),
-                        TextButton(
-                          onPressed: () {
-                            final state = context
-                                .findAncestorStateOfType<MainShellState>();
-                            if (state != null) {
-                              state.updateIndex(1);
-                            }
-                          },
-                          child: Text(AppMessages.seeAllAction),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                  ],
                 ],
               ),
             ),
           ),
-          if (hasProducts)
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              sliver: SliverGrid(
-                delegate: SliverChildBuilderDelegate(
-                  (_, i) => ProductCard(product: displayProducts[i]),
-                  childCount: displayProducts.length,
+
+          // Products Section (Header + Grid/Empty)
+          SliverToBoxAdapter(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 24, 20, 12),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        isUsingFavorites
+                            ? AppMessages.yourFavorites
+                            : AppMessages.featuredProducts,
+                        style: TextStyle(
+                            color:
+                                Theme.of(context).textTheme.titleMedium?.color,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          final state =
+                              context.findAncestorStateOfType<MainShellState>();
+                          if (state != null) {
+                            state.updateIndex(isUsingFavorites ? 3 : 1);
+                          }
+                        },
+                        child: Text(AppMessages.seeAllAction,
+                            style: TextStyle(
+                                color: primaryColor,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 13)),
+                      ),
+                    ],
+                  ),
                 ),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 12,
-                  childAspectRatio: 0.85,
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: hasProducts
+                      ? GridView.builder(
+                          key: const ValueKey('home_products_grid_stable'),
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            childAspectRatio: 0.72,
+                            crossAxisSpacing: 14,
+                            mainAxisSpacing: 14,
+                          ),
+                          itemCount: displayProducts.length,
+                          itemBuilder: (context, index) {
+                            final product = displayProducts[index];
+                            return ProductCard(
+                              key: ValueKey('prod_home_${product.id}'),
+                              product: product,
+                            );
+                          },
+                        )
+                      : Center(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 40),
+                            child: isLoading
+                                ? const CircularProgressIndicator()
+                                : Text(
+                                    isUsingFavorites
+                                        ? AppMessages.noFavorites
+                                        : AppMessages.noResults,
+                                    style: TextStyle(
+                                        color: Theme.of(context)
+                                            .textTheme
+                                            .bodySmall
+                                            ?.color),
+                                  ),
+                          ),
+                        ),
                 ),
-              ),
+                const SizedBox(height: 32),
+              ],
             ),
-          // Loading state if needed
-          if (productProvider.isFeaturedLoading && !hasProducts)
-            const SliverFillRemaining(
-              hasScrollBody: false,
-              child: Center(child: CircularProgressIndicator()),
-            ),
-          const SliverToBoxAdapter(child: SizedBox(height: 24)),
+          ),
+
+          const SliverToBoxAdapter(child: SizedBox(height: 20)),
         ],
       ),
     );
   }
 
   void _showNotifications(BuildContext context) {
+    final settings = context.read<SettingsProvider>();
+    final primaryColor =
+        settings.isDarkMode ? AppColors.primaryGreen : AppColors.primaryBlue;
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.cardBackground,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         title: Text(AppMessages.notificationsTitle,
-            style: const TextStyle(color: AppColors.textPrimary)),
+            style: TextStyle(
+                color: Theme.of(context).textTheme.titleLarge?.color)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
               leading: Icon(Icons.notifications_active_outlined,
-                  color: AppColors.primary),
+                  color: primaryColor),
               title: Text(AppMessages.riceOfferTitle,
-                  style: const TextStyle(color: AppColors.textPrimary)),
+                  style: TextStyle(
+                      color: Theme.of(context).textTheme.titleSmall?.color)),
               subtitle: Text(AppMessages.riceOfferDesc,
-                  style: const TextStyle(color: AppColors.textSecondary)),
+                  style: TextStyle(
+                      color: Theme.of(context).textTheme.bodySmall?.color)),
             ),
             ListTile(
-              leading: Icon(Icons.check_circle_outline, color: Colors.green),
+              leading:
+                  const Icon(Icons.check_circle_outline, color: Colors.green),
               title: Text(AppMessages.searchCompletedTitle,
-                  style: const TextStyle(color: AppColors.textPrimary)),
+                  style: TextStyle(
+                      color: Theme.of(context).textTheme.titleSmall?.color)),
               subtitle: Text(AppMessages.searchCompletedDesc,
-                  style: const TextStyle(color: AppColors.textSecondary)),
+                  style: TextStyle(
+                      color: Theme.of(context).textTheme.bodySmall?.color)),
             ),
           ],
         ),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text(AppMessages.closeAction)),
+              child: Text(AppMessages.closeAction,
+                  style: TextStyle(color: primaryColor))),
         ],
       ),
     );

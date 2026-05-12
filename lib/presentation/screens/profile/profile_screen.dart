@@ -129,6 +129,12 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final authProvider = context.watch<AuthProvider>();
     final settingsProvider = context.watch<SettingsProvider>();
+    final primaryColor = settingsProvider.isDarkMode
+        ? AppColors.primaryGreen
+        : AppColors.primaryBlue;
+    final primaryGradient = settingsProvider.isDarkMode
+        ? AppColors.primaryGradientGreen
+        : AppColors.primaryGradientBlue;
     final metadata = authProvider.currentUser?.userMetadata;
 
     final name = metadata?['full_name'] ?? 'User';
@@ -183,7 +189,7 @@ class ProfileScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  gradient: AppColors.primaryGradient,
+                  gradient: primaryGradient,
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Row(
@@ -299,10 +305,10 @@ class ProfileScreen extends StatelessWidget {
                       width: 38,
                       height: 38,
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withOpacity(0.1),
+                        color: primaryColor.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: Icon(item.$1, color: AppColors.primary, size: 18),
+                      child: Icon(item.$1, color: primaryColor, size: 18),
                     ),
                     title: Text(item.$2,
                         style: TextStyle(
@@ -317,7 +323,7 @@ class ProfileScreen extends StatelessWidget {
                             value: settingsProvider.isDarkMode,
                             onChanged: (value) =>
                                 settingsProvider.toggleDarkMode(value),
-                            activeColor: AppColors.primary,
+                            activeThumbColor: primaryColor,
                           )
                         : const Icon(Icons.arrow_forward_ios_rounded,
                             color: AppColors.textHint, size: 14),

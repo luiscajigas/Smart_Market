@@ -4,7 +4,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class AppConstants {
   static String get baseUrl {
-    String url = dotenv.env['API_BASE_URL'] ?? '';
+    String url = (dotenv.env['API_BASE_URL'] ?? '').trim();
     if (url.isEmpty) {
       throw Exception('API_BASE_URL not found in .env file');
     }
@@ -22,10 +22,11 @@ class AppConstants {
     return url;
   }
 
-  static String get supabaseUrl => dotenv.env['SUPABASE_URL'] ?? '';
-  static String get supabaseAnonKey => dotenv.env['SUPABASE_ANON_KEY'] ?? '';
+  static String get supabaseUrl => (dotenv.env['SUPABASE_URL'] ?? '').trim();
+  static String get supabaseAnonKey =>
+      (dotenv.env['SUPABASE_ANON_KEY'] ?? '').trim();
 
-  static const String searchEndpoint = '/products/search';
+  static const String searchEndpoint = '/search';
 
   static const String appName = 'Smart Market';
 }

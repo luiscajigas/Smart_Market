@@ -35,21 +35,25 @@ class Product {
 
 class Supermarket {
   final String id;
+  final String? source;
   final String name;
   final String logo;
-  final double distance;
+  final double? distance;
   final double rating;
   final double? latitude;
   final double? longitude;
+  final String? address;
 
   const Supermarket({
     required this.id,
+    this.source,
     required this.name,
     required this.logo,
-    required this.distance,
+    this.distance,
     required this.rating,
     this.latitude,
     this.longitude,
+    this.address,
   });
 }
 

@@ -6,34 +6,59 @@ class FavoritesProvider extends ChangeNotifier {
   final SupabaseClient _client = Supabase.instance.client;
   List<ProductResult> _favorites = [];
   bool _isLoading = false;
+  String? _errorMessage;
 
   List<ProductResult> get favorites => _favorites;
   bool get isLoading => _isLoading;
+  String? get errorMessage => _errorMessage;
 
   FavoritesProvider() {
     _loadFavorites();
   }
 
+  Future<void> refresh() async {
+    await _loadFavorites();
+  }
+
   Future<void> _loadFavorites() async {
     final user = _client.auth.currentUser;
-    if (user == null) return;
+    if (user == null) {
+      _isLoading = false;
+      _favorites = [];
+      notifyListeners();
+      return;
+    }
 
     _isLoading = true;
+    _errorMessage = null;
     notifyListeners();
 
     try {
-      final response = await _client
-          .from('favorites')
-          .select()
-          .eq('user_id', user.id);
+      final response =
+          await _client.from('favorites').select().eq('user_id', user.id);
 
-      _favorites = (response as List)
-          .map((item) => ProductResult.fromJson({
-                ...item['product_data'],
-                'is_favorite': true,
-              }))
-          .toList();
+      if (response != null && response is List) {
+        _favorites = response
+            .map((item) {
+              try {
+                final productData =
+                    item['product_data'] as Map<String, dynamic>? ?? {};
+                return ProductResult.fromJson({
+                  ...productData,
+                  'is_favorite': true,
+                });
+              } catch (e) {
+                return null;
+              }
+            })
+            .whereType<ProductResult>()
+            .toList();
+      } else {
+        _favorites = [];
+      }
     } catch (e) {
+      _errorMessage = e.toString();
+      _favorites = [];
     }
 
     _isLoading = false;
@@ -67,8 +92,7 @@ class FavoritesProvider extends ChangeNotifier {
         product.isFavorite = true;
       }
       notifyListeners();
-    } catch (e) {
-    }
+    } catch (e) {}
   }
 
   bool isFavorite(ProductResult product) {

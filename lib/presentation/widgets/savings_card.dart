@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_messages.dart';
-import '../../data/models/mock_data.dart';
+import '../../data/providers/history_provider.dart';
+import '../../data/providers/product_provider.dart';
 import '../../data/providers/settings_provider.dart';
 
 class SavingsCard extends StatelessWidget {
@@ -11,8 +12,30 @@ class SavingsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final settingsProvider = context.watch<SettingsProvider>();
+    final historyProvider = context.watch<HistoryProvider>();
+    final productProvider = context.watch<ProductProvider>();
     final isDark = settingsProvider.isDarkMode;
-    final pct = (MockData.monthlySpent / MockData.monthlyBudget * 100).round();
+
+    final monthlyBudget = settingsProvider.monthlyBudget;
+    final now = DateTime.now();
+    final monthlySpent = historyProvider.history.fold<double>(0.0, (sum, row) {
+      final createdAt = row['created_at'];
+      final dt = DateTime.tryParse(createdAt?.toString() ?? '');
+      if (dt == null) return sum;
+      if (dt.year != now.year || dt.month != now.month) return sum;
+      final price = row['price'];
+      final value = price is num ? price.toDouble() : double.tryParse('$price');
+      return sum + (value ?? 0.0);
+    });
+
+    final projectedSavings =
+        productProvider.groupedProducts.fold<double>(0.0, (sum, p) {
+      return sum + p.savings;
+    });
+
+    final pct = monthlyBudget > 0
+        ? (monthlySpent / monthlyBudget * 100).clamp(0, 999).round()
+        : 0;
 
     return GestureDetector(
       onTap: () => _showUpdateBudgetDialog(context),
@@ -51,7 +74,7 @@ class SavingsCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    '${AppMessages.savingsTab}: \$${MockData.monthlySaved.toStringAsFixed(0)}',
+                    '${AppMessages.savingsTab}: \$${projectedSavings.toStringAsFixed(0)}',
                     style: const TextStyle(
                         color: Colors.black,
                         fontSize: 11,
@@ -62,7 +85,7 @@ class SavingsCard extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              '\$${MockData.monthlySpent.toStringAsFixed(0)}',
+              '\$${monthlySpent.toStringAsFixed(0)}',
               style: const TextStyle(
                 color: Colors.black,
                 fontSize: 32,
@@ -71,7 +94,7 @@ class SavingsCard extends StatelessWidget {
               ),
             ),
             Text(
-              '${AppMessages.budgetSpent} ${AppMessages.ofBudgetPrefix}\$${MockData.monthlyBudget.toStringAsFixed(0)}${AppMessages.ofBudgetSuffix}',
+              '${AppMessages.budgetSpent} ${AppMessages.ofBudgetPrefix}\$${monthlyBudget.toStringAsFixed(0)}${AppMessages.ofBudgetSuffix}',
               style: const TextStyle(color: Colors.black54, fontSize: 13),
             ),
             const SizedBox(height: 16),
@@ -94,8 +117,12 @@ class SavingsCard extends StatelessWidget {
   }
 
   void _showUpdateBudgetDialog(BuildContext context) {
-    final controller =
-        TextEditingController(text: MockData.monthlyBudget.toStringAsFixed(0));
+    final settingsProvider = context.read<SettingsProvider>();
+    final primaryColor = settingsProvider.isDarkMode
+        ? AppColors.primaryGreen
+        : AppColors.primaryBlue;
+    final controller = TextEditingController(
+        text: settingsProvider.monthlyBudget.toStringAsFixed(0));
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -109,32 +136,32 @@ class SavingsCard extends StatelessWidget {
           style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
           decoration: InputDecoration(
             labelText: AppMessages.monthlyBudgetTitle,
-            labelStyle: const TextStyle(color: AppColors.textHint),
-            enabledBorder: const UnderlineInputBorder(
-                borderSide: BorderSide(color: AppColors.primary)),
+            labelStyle:
+                TextStyle(color: Theme.of(context).textTheme.bodySmall?.color),
+            enabledBorder:
+                UnderlineInputBorder(borderSide: BorderSide(color: primaryColor)),
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: Text(AppMessages.cancelAction,
-                style: const TextStyle(color: AppColors.textSecondary)),
+                style: TextStyle(
+                    color: Theme.of(context).textTheme.bodySmall?.color)),
           ),
           ElevatedButton(
             onPressed: () {
-              // In a real case, this would update state or DB
               final newVal = double.tryParse(controller.text);
               if (newVal != null) {
-                // Simulate update
+                settingsProvider.setMonthlyBudget(newVal);
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text(AppMessages.saveBudgetSuccess)),
                 );
               }
             },
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
-            child: Text(AppMessages.saveAction,
-                style: const TextStyle(color: Colors.white)),
+            style: ElevatedButton.styleFrom(backgroundColor: primaryColor),
+            child: Text(AppMessages.saveAction),
           ),
         ],
       ),

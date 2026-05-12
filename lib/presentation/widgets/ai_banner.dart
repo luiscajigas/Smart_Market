@@ -9,7 +9,9 @@ class AiBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    context.watch<SettingsProvider>();
+    final settings = context.watch<SettingsProvider>();
+    final primaryColor =
+        settings.isDarkMode ? AppColors.primaryGreen : AppColors.primaryBlue;
     final savingsText =
         '${AppMessages.saveAmountMonthPrefix}\$20${AppMessages.saveAmountMonthSuffix}';
 
@@ -20,7 +22,7 @@ class AiBanner extends StatelessWidget {
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+          border: Border.all(color: primaryColor.withOpacity(0.3)),
         ),
         child: Row(
           children: [
@@ -28,12 +30,12 @@ class AiBanner extends StatelessWidget {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.1),
+                color: primaryColor.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(14),
               ),
-              child: const Center(
+              child: Center(
                 child: Icon(Icons.psychology_outlined,
-                    color: AppColors.primary, size: 28),
+                    color: primaryColor, size: 28),
               ),
             ),
             const SizedBox(width: 14),
@@ -48,13 +50,14 @@ class AiBanner extends StatelessWidget {
                           fontWeight: FontWeight.w800)),
                   const SizedBox(height: 2),
                   Text(savingsText,
-                      style: const TextStyle(
-                          color: AppColors.textSecondary, fontSize: 13)),
+                      style: TextStyle(
+                          color: Theme.of(context).textTheme.bodySmall?.color,
+                          fontSize: 13)),
                 ],
               ),
             ),
-            const Icon(Icons.arrow_forward_ios_rounded,
-                color: AppColors.textHint, size: 14),
+            Icon(Icons.arrow_forward_ios_rounded,
+                color: Theme.of(context).textTheme.bodySmall?.color, size: 14),
           ],
         ),
       ),
@@ -62,6 +65,9 @@ class AiBanner extends StatelessWidget {
   }
 
   void _showAiRecommendations(BuildContext context) {
+    final settings = context.read<SettingsProvider>();
+    final primaryColor =
+        settings.isDarkMode ? AppColors.primaryGreen : AppColors.primaryBlue;
     showModalBottomSheet(
       context: context,
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -80,26 +86,24 @@ class AiBanner extends StatelessWidget {
                     fontSize: 20,
                     fontWeight: FontWeight.w800)),
             const SizedBox(height: 16),
-            _buildTipItem(
-                AppMessages.buyGrainsAtExito, AppMessages.grainsExitoDesc),
-            _buildTipItem(
-                AppMessages.dairyAtCarulla, AppMessages.dairyCarullaDesc),
-            _buildTipItem(
-                AppMessages.proteinAtJumbo, AppMessages.proteinJumboDesc),
+            _buildTipItem(context, AppMessages.buyGrainsAtExito,
+                AppMessages.grainsExitoDesc),
+            _buildTipItem(context, AppMessages.dairyAtCarulla,
+                AppMessages.dairyCarullaDesc),
+            _buildTipItem(context, AppMessages.proteinAtJumbo,
+                AppMessages.proteinJumboDesc),
             const SizedBox(height: 24),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () => Navigator.pop(context),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
+                  backgroundColor: primaryColor,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12)),
                 ),
-                child: Text(AppMessages.understoodAction,
-                    style: const TextStyle(
-                        color: Colors.white, fontWeight: FontWeight.bold)),
+                child: Text(AppMessages.understoodAction),
               ),
             ),
           ],
@@ -108,20 +112,24 @@ class AiBanner extends StatelessWidget {
     );
   }
 
-  Widget _buildTipItem(String title, String desc) {
+  Widget _buildTipItem(BuildContext context, String title, String desc) {
+    final settings = context.read<SettingsProvider>();
+    final primaryColor =
+        settings.isDarkMode ? AppColors.primaryGreen : AppColors.primaryBlue;
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(title,
-              style: const TextStyle(
-                  color: AppColors.primary,
+              style: TextStyle(
+                  color: primaryColor,
                   fontWeight: FontWeight.bold,
                   fontSize: 14)),
           Text(desc,
-              style: const TextStyle(
-                  color: AppColors.textSecondary, fontSize: 13)),
+              style: TextStyle(
+                  color: Theme.of(context).textTheme.bodySmall?.color,
+                  fontSize: 13)),
         ],
       ),
     );
